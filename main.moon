@@ -116,6 +116,8 @@ class Platform
     g.push!
     g.translate @ox, @oy
 
+    g.setColor 200,200,200
+
     -- top wall
     g.rectangle "fill", @floor[1], @floor[2] - @wall_height,
       @floor[3] - @floor[1], @wall_height
@@ -129,7 +131,6 @@ class Platform
       @floor[5] - @floor[7], @wall_height
 
     g.setColor 255,255,255
-
 
     wheel_inset = 60
     -- wheel 1
