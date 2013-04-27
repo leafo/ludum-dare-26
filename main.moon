@@ -81,7 +81,7 @@ class Quad
 
 class World
   new: (@game, @player) =>
-    @entities = {}
+    @entities = DrawList!
 
     @floor = Quad 100, 100,
       200, 120,
@@ -91,6 +91,7 @@ class World
   draw: =>
     @floor\draw!
     @player\draw!
+    @entities\draw!
 
   collides: (thing) =>
     box = thing.box or box
@@ -99,14 +100,53 @@ class World
 
   update: (dt) =>
     @player\update dt, @
+    @entities\update dt, @
 
+class Bullet extends Box
+  size: 8
+  speed: 300
+
+  new: (@vel, x, y) =>
+    half = @size / 2
+
+    super f(x - half), f(y - half), @size, @size
+
+    @rads = @vel\normalized!\radians!
+    @life = 3
+
+  draw: =>
+    -- hitbox
+    g.rectangle "line", @x, @y, @w, @h
+
+    -- trail
+    g.setColor 255, 246, 119
+    g.push!
+    g.translate @center!
+
+    g.scale 3, 3
+    g.rotate @rads
+    g.rectangle "fill", -5, -1, 5, 2
+    g.pop!
+    g.setColor 255, 255, 255
+
+
+  update: (dt, world) =>
+    @move unpack @vel * @speed * dt
+
+    @life -= dt
+    @life > 0
 
 class Gun extends Box
   ox: 2
   oy: 5
 
+  length: 20
+
   new: (@entity) =>
     @dir = Vec2d 1,0
+
+  tip: =>
+    unpack Vec2d(@length, 0)\rotate(@dir\radians!)\adjust @entity.box\center!
 
   draw: (gx, gy) =>
     g.push!
@@ -149,9 +189,12 @@ class Game
     @player = Player 152, 162
     @world = World @, @player
 
+  on_key: (key, code) =>
+    if key == " "
+      @paused = not @paused
+
   mousepressed: (x,y) =>
-    print x,y
-    print @world.floor\contains_pt x,y
+    @world.entities\add Bullet(@player.gun.dir, @player.gun\tip!)
 
   draw: =>
     @world\draw!
@@ -161,6 +204,7 @@ class Game
       p tostring(timer.getFPS!), 0,0
 
   update: (dt) =>
+    return if @paused
     @world\update dt
 
 love.load = ->
