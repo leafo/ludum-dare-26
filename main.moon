@@ -40,14 +40,14 @@ class Quad
     @[7] = x4
     @[8] = y4
 
-  draw: =>
-    g.setColor 255,255,255, 128
+  draw: (top_r, top_g, top_b, bot_r=top_r, bot_g=top_g, bot_b=top_b) =>
+    g.setColor top_r, top_g, top_b
     g.triangle "fill",
       @[1], @[2],
       @[3], @[4],
       @[5], @[6]
 
-    g.setColor 255,255,255, 64
+    g.setColor bot_r, bot_g, bot_b
     g.triangle "fill",
       @[1], @[2],
       @[5], @[6],
@@ -82,10 +82,11 @@ class Quad
 class World
   new: (@game, @player) =>
     @entities = DrawList!
-
     @platform = Platform!
+    @ground = Ground!
 
   draw: =>
+    @ground\draw!
     @platform\draw!
     @player\draw!
     @entities\draw!
@@ -96,13 +97,54 @@ class World
   update: (dt) =>
     @player\update dt, @
     @entities\update dt, @
+    @ground\update dt, @
+
+class Ground
+  width: 0.7 -- of screen
+
+  new: =>
+    @elapsed = 0
+    @img = imgfy "img/ground.png"
+    @img\set_wrap "repeat", "repeat"
+
+    @effect = g.newPixelEffect [[
+      extern number time;
+      extern bool persp;
+
+      vec4 effect(vec4 color, sampler2D tex, vec2 st, vec2 pixel_coords) {
+        float x = 1 - st.x - 0.5;
+        float y = st.y;
+        if (persp) {
+          x /= y * 1.5 + 1.5;
+        }
+
+        return texture2D(tex, vec2(x - time, y));
+      }
+    ]]
+
+  draw: =>
+    g.push!
+    g.translate 0, g.getHeight! * (1 - @width)
+    g.scale g.getWidth! / @img\width!, g.getHeight! / @img\height! * @width
+
+    @effect\send "persp", 1
+    g.setPixelEffect @effect
+
+    @img\draw 0, 0
+    g.pop!
+
+    g.setPixelEffect!
+
+  update: (dt) =>
+    @elapsed += dt / 5
+    @effect\send "time", @elapsed
 
 class Platform
-  wall_height: 15
+  wall_height: 20
 
   new: =>
     width = 500
-    height = 150
+    height = 120
     skew = 0.8
     cx, cy = g.getWidth! / 2, g.getHeight! / 2
 
@@ -129,7 +171,7 @@ class Platform
     g.rectangle "fill", @floor[1], @floor[2] - @wall_height,
       @floor[3] - @floor[1], @wall_height
 
-    @floor\draw!
+    @floor\draw 141, 142, 143, 83, 85, 86
 
     -- bottom wall
     g.setColor 60,60,60
