@@ -8,11 +8,11 @@ require "lovekit.all"
 
 local *
 
-
 p = (str, ...) -> g.print str\lower!, ...
 
-import TrapSystem from require "system"
-import EnemySpawner, Enemy from require "enemies"
+require "system"
+require "particles"
+require "enemies"
 
 system = TrapSystem 0.002
 

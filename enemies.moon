@@ -1,6 +1,5 @@
 
-
-local *
+export *
 
 -- stores enemies in the entity list in the world
 class EnemySpawner extends Sequence
@@ -27,8 +26,7 @@ class Enemy extends Box
     if thing.is_bullet
       thing.alive = false
       @life -= 50
-
-    print "enemy took hit"
+      world.particles\add Sparks world, thing\center!
 
   update: (dt, world) =>
     @vel\adjust unpack @accel * dt
@@ -39,4 +37,4 @@ class Enemy extends Box
   draw: =>
     super @color
 
-{ :EnemySpawner, :Enemy }
+nil

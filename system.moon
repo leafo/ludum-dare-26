@@ -1,7 +1,7 @@
 
 {graphics: g, :timer, :mouse, :keyboard} = love
 
-local *
+export *
 
 barycentric_coords = (x1, y1, x2, y2, x3,y3, px, py) ->
   det = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
@@ -114,11 +114,5 @@ class SystemTest
 
     g.pop!
 
+nil
 
-if ... == "test"
-  system = TrapSystem 0.003
-  x, y = system\project 100, 100
-  print x, y
-  print system\unproject x, y
-
-{ :TrapSystem, :SystemTest, :Quad }
