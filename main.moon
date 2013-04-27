@@ -100,19 +100,47 @@ class World
   update: (dt) =>
     @player\update dt, @
 
+
+class Gun extends Box
+  ox: 2
+  oy: 5
+
+  new: (@entity) =>
+    @dir = Vec2d 1,0
+
+  draw: (gx, gy) =>
+    g.push!
+    g.translate gx, gy
+
+    g.rotate @dir\radians!
+    g.translate -@ox, -@oy
+    g.rectangle "fill", 0, 0, 20, 10
+    g.pop!
+
+  update: (dt) =>
+
 class Player extends Entity
   mover = make_mover "w", "s", "a", "d"
   speed: 140
 
   new: (x=0, y=0) =>
     super nil, x, y
+    @gun = Gun @
 
   draw: =>
     @box\draw!
+    g.setColor 255,100,100
+    @gun\draw @box\center!
+    g.setColor 255,255,255
 
   update: (dt, world) =>
     dir = mover(@speed) * dt
     @fit_move dir[1], dir[2], world
+
+    mx, my = mouse.getPosition!
+    @gun.dir = (Vec2d(mx, my) - Vec2d(@box\center!))\normalized!
+
+    @gun\update dt, world
 
 class Game
   show_fps: true
