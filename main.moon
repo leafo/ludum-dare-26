@@ -82,19 +82,30 @@ class Platform
   width: 500
   height: 150
 
+  inner_height: 40
+  inner_width: 580
+
   new: =>
     @ox, @oy = g.getWidth! / 2, g.getHeight! / 2
+
     @box = Box -@width/2, -@height/2, @width, @height
+    @inner_box = Box -@inner_width/2, -@inner_height/2, @inner_width, @inner_height
     @recalc!
 
   recalc: =>
     @floor = system\project_box @box
+    @inner_floor = system\project_box @inner_box
 
   collides: (thing) =>
     if pt = thing.pos
-      not @box\touches_pt pt.x, pt.y
-    else
-      false
+      thing.in_control_zone = false
+
+      return false if @box\touches_pt pt.x, pt.y
+      if @inner_box\touches_pt pt.x, pt.y
+        thing.in_control_zone = true
+        return false
+
+    true
 
   draw: (callback) =>
     g.push!
@@ -104,6 +115,7 @@ class Platform
     g.rectangle "fill", @floor[1], @floor[2] - @wall_height,
       @floor[3] - @floor[1], @wall_height
 
+    @inner_floor\draw 106, 109, 111
     @floor\draw 141, 142, 143, 83, 85, 86
 
     -- bottom wall
@@ -115,10 +127,13 @@ class Platform
 
     g.pop!
 
+  move: (dy) =>
+    @oy += dy / 5
+
   update: (dt, world) =>
-    vec = movement_vector! * 100 * dt
-    @ox += vec[1]
-    @oy += vec[2]
+    -- vec = movement_vector! * 100 * dt
+    -- @ox += vec[1]
+    -- @oy += vec[2]
 
 class Bullet extends Box
   size: 8
@@ -202,6 +217,9 @@ class Player extends Entity
 
   draw: =>
     return unless @box
+    if @in_control_zone
+      g.setColor 100, 200, 100
+
     @box\draw!
     g.setColor 255,100,100
     @gun\draw @box\center!
@@ -209,7 +227,10 @@ class Player extends Entity
 
   update: (dt, world) =>
     dir = mover(@speed) * dt
-    @fit_move dir[1], dir[2], world, @pos
+    cx, cy = @fit_move dir[1], dir[2], world, @pos
+
+    if @in_control_zone and cy
+      world.platform\move dir[2]
 
     @update_box world
 
