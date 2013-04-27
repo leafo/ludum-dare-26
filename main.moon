@@ -14,6 +14,8 @@ import TrapSystem from require "system"
 
 system = TrapSystem 0.002
 
+bump = (t) -> sin(t*2) * cos(t*8)
+
 class World
   new: (@game, @player) =>
     @entities = DrawList!
@@ -87,6 +89,7 @@ class Platform
 
   new: =>
     @ox, @oy = g.getWidth! / 2, g.getHeight! / 2
+    @elapsed = 0
 
     @box = Box -@width/2, -@height/2, @width, @height
     @inner_box = Box -@inner_width/2, -@inner_height/2, @inner_width, @inner_height
@@ -113,8 +116,15 @@ class Platform
     true
 
   draw: (callback) =>
+    { :elapsed } = @
+
     g.push!
     g.translate @ox, @oy
+
+    g.rotate sin(elapsed * 10) * 0.02
+
+    g.translate cos(elapsed * 6) * 5,
+      cos(elapsed * 12) * 3
 
     g.setColor 200,200,200
 
@@ -135,11 +145,11 @@ class Platform
     wheel_inset = 60
     -- wheel 1
     wx, wy = system\project @box.x, @box.y + @box.h
-    @wheels[1]\draw wx + wheel_inset, wy + 30
+    @wheels[1]\draw wx + wheel_inset, wy + 30 + bump(elapsed*2) * 10
 
     -- wheel 2
     wx, wy = system\project @box.x + @box.w, @box.y + @box.h
-    @wheels[2]\draw wx - wheel_inset, wy + 30
+    @wheels[2]\draw wx - wheel_inset, wy + 30 + bump(elapsed*2 + 0.8) * 10
 
     g.pop!
 
@@ -147,6 +157,8 @@ class Platform
     @oy += dy / 5
 
   update: (dt, world) =>
+    @elapsed += dt
+
     for w in *@wheels
       w\update dt
 
@@ -323,7 +335,7 @@ class Game
     @world\update dt
 
 love.load = ->
-  g.setBackgroundColor 52/2, 57/2, 61/2
+  g.setBackgroundColor 10, 6, 9
   g.setPointSize 12
 
   dispatch = Dispatcher Game!
