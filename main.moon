@@ -39,6 +39,8 @@ class World
 
     @particles\add EnemySpawner @
 
+    @box = Box 0, 0, g.getWidth!, g.getHeight!
+
   draw: =>
     @ground\draw!
 
@@ -391,71 +393,6 @@ class Player extends Entity
 
     @gun\update dt, world
 
-
--- 3 point bezier
-bez3 = (x1, y1, x2, y2, x3, y3, t) ->
-  tt = 1 - t
-
-  x = tt * (tt * x1 + t * x2) + t * (tt * x2 + t * x3)
-  y = tt * (tt * y1 + t * y2) + t * (tt * y2 + t * y3)
-
-  x,y
-
--- derivative of 3 point bez
-bez3_prime = (x1, y1, x2, y2, x3, y3, t) ->
-  tt = 1 - t
-
-  x = 2 * tt * (x2 - x1) + 2 * t * (x3 - x2)
-  y = 2 * tt * (y2 - y1) + 2 * t * (y3 - y2)
-
-  x,y
-
-class Thing
-  speed: 200
-
-  new: (@x, @y) =>
-    @flip = false
-
-  update: (dt) =>
-    {:fx, :fy, :tx, :ty, :cx, :cy} = @
-
-    if tx and fx
-      before = @time
-      @time += dt * @tscale
-      if @time > 1
-        @x, @y = @tx, @ty
-        @tx, @ty = nil, nil
-      else
-        -- wow this is lame
-        ax, ay = bez3 fx, fy, cx, cy, tx, ty, before
-        bx, by = bez3 fx, fy, cx, cy, tx, ty, @time
-
-        dx = bx - ax
-        dy = by - ay
-
-        @x += dx
-        @y += dy
-
-  draw: =>
-    g.point @x ,@y
-
-  move_to: (@tx, @ty) =>
-    print "moving to", @tx, @ty
-    @time = 0
-    @fx, @fy = @x, @y
-
-    move = Vec2d(@tx - @fx, @ty - @fy)
-    move_len = move\len!
-    control_len = 1 + move_len / 4
-
-    dir = move\normalized!\cross!
-    dir = dir\flip! if @flip
-    @flip = not @flip
-
-    @cx = (@tx + @fx) / 2 + dir[1] * control_len
-    @cy = (@ty + @fy) / 2 + dir[2] * control_len
-
-    @tscale = 1 / move_len * @speed
 
 class Game
   show_fps: true
