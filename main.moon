@@ -145,12 +145,7 @@ class Ground
 class Platform
   wall_height: 20
 
-  new: =>
-    @ox, @oy = 0, 0
-
-    width = 500
-    height = 120
-    skew = 0.8
+  make_trapezoid = (width, height, skew) ->
     cx, cy = g.getWidth! / 2, g.getHeight! / 2
 
     height2 = height/2
@@ -161,10 +156,23 @@ class Platform
 
     skewed_width = width2 * skew
 
-    @floor = Quad cx - skewed_width, y_top,
+    Quad cx - skewed_width, y_top,
       cx + skewed_width, y_top,
       cx + width2, y_bottom,
       cx - width2, y_bottom
+
+  new: =>
+    @ox, @oy = 0, 0
+
+    base_skew = 0.8
+    tall_h = 120
+    short_h = 30
+
+    @floor = make_trapezoid 500, tall_h, base_skew
+
+    skew2 = base_skew + (1 - (short_h / tall_h)) * (1 - base_skew)
+
+    @floor2 = make_trapezoid 500, short_h, skew2
 
   collides: (thing) =>
     box = thing.box or box
@@ -180,6 +188,7 @@ class Platform
       @floor[3] - @floor[1], @wall_height
 
     @floor\draw 141, 142, 143, 83, 85, 86
+    @floor2\draw 100,200,100
 
     -- bottom wall
     g.setColor 60,60,60
