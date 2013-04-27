@@ -87,14 +87,17 @@ class World
 
   draw: =>
     @ground\draw!
-    @platform\draw!
-    @player\draw!
+
+    @platform\draw ->
+      @player\draw!
+
     @entities\draw!
 
   collides: (thing) =>
     @platform\collides thing
 
   update: (dt) =>
+    @platform\update dt, @
     @player\update dt, @
     @entities\update dt, @
     @ground\update dt, @
@@ -143,6 +146,8 @@ class Platform
   wall_height: 20
 
   new: =>
+    @ox, @oy = 0, 0
+
     width = 500
     height = 120
     skew = 0.8
@@ -166,7 +171,10 @@ class Platform
     cx, cy = box\center!
     not @floor\contains_pt cx, cy
 
-  draw: =>
+  draw: (callback) =>
+    g.push!
+    g.translate @ox, @oy
+
     -- top wall
     g.rectangle "fill", @floor[1], @floor[2] - @wall_height,
       @floor[3] - @floor[1], @wall_height
@@ -180,7 +188,15 @@ class Platform
 
     g.setColor 255,255,255
 
+    callback! if callback
+
+    g.pop!
+
   update: (dt, world) =>
+    vec = movement_vector! * 100 * dt
+    @ox += vec[1]
+    @oy += vec[2]
+
 
 class Bullet extends Box
   size: 8
@@ -226,7 +242,7 @@ class Gun extends Box
     @dir = Vec2d 1,0
 
   tip: =>
-    unpack Vec2d(@length, 0)\rotate(@dir\radians!)\adjust @entity.box\center!
+    unpack Vec2d(@length, 0)\rotate(@dir\radians!)\adjust @entity\world_center!
 
   draw: (gx, gy) =>
     g.push!
@@ -253,9 +269,14 @@ class Player extends Entity
     @gun\draw @box\center!
     g.setColor 255,255,255
 
+  world_center: =>
+    @wx + @box.w / 2, @wy + @box.h / 2
+
   update: (dt, world) =>
     dir = mover(@speed) * dt
     @fit_move dir[1], dir[2], world
+
+    @wx, @wy = @box.x + world.platform.ox, @box.y + world.platform.oy
 
     mx, my = mouse.getPosition!
     @gun.dir = (Vec2d(mx, my) - Vec2d(@box\center!))\normalized!
