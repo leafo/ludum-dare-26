@@ -10,77 +10,9 @@ local *
 
 p = (str, ...) -> g.print str\lower!, ...
 
-barycentric_coords = (x1, y1, x2, y2, x3,y3, px, py) ->
-  det = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
+import TrapSystem from require "system"
 
-  b1 = (y2 - y3) * (px - x3) + (x3 - x2) * (py - y3)
-  b2 = (y3 - y1) * (px - x3) + (x1 - x3) * (py - y3)
-
-  b1 = b1 / det
-  b2 = b2 / det
-  b3 = 1 - b1 - b2
-
-  b1, b2, b3
-
-pt_in_tri = (...) ->
-  b1, b2, b3 = barycentric_coords ...
-  return false if b1 < 0 or b2 < 0 or b3 < 0
-  true
-
-
-class Quad
-  -- clockwise from top left
-  new: (x1, y1, x2, y2, x3, y3, x4, y4) =>
-    @[1] = x1
-    @[2] = y1
-
-    @[3] = x2
-    @[4] = y2
-
-    @[5] = x3
-    @[6] = y3
-
-    @[7] = x4
-    @[8] = y4
-
-  draw: (top_r, top_g, top_b, bot_r=top_r, bot_g=top_g, bot_b=top_b) =>
-    g.setColor top_r, top_g, top_b
-    g.triangle "fill",
-      @[1], @[2],
-      @[3], @[4],
-      @[5], @[6]
-
-    g.setColor bot_r, bot_g, bot_b
-    g.triangle "fill",
-      @[1], @[2],
-      @[5], @[6],
-      @[7], @[8]
-
-    -- g.setColor 255,100,100
-    -- g.point @[1], @[2]
-    -- g.setColor 100,255,100
-    -- g.point @[3], @[4]
-    -- g.setColor 100,100,255
-    -- g.point @[5], @[6]
-    -- g.setColor 100,255,255
-    -- g.point @[7], @[8]
-    -- g.setColor 255,255,255
-
-  contains_pt: (x,y) =>
-    return true if pt_in_tri @[1], @[2],
-      @[3], @[4],
-      @[5], @[6],
-      x,y
-
-    return true if pt_in_tri @[1], @[2],
-      @[5], @[6],
-      @[7], @[8],
-      x,y
-
-    false
-
-  __tostring: =>
-    "vec2d<(%f, %f), (%f, %f), (%f, %f), (%f, %f)>"\format unpack @
+system = TrapSystem 0.002
 
 class World
   new: (@game, @player) =>
@@ -147,40 +79,22 @@ class Ground
 
 class Platform
   wall_height: 20
-
-  make_trapezoid = (width, height, skew) ->
-    cx, cy = g.getWidth! / 2, g.getHeight! / 2
-
-    height2 = height/2
-    width2 = width/2
-
-    y_top = cy - height2
-    y_bottom = cy + height2
-
-    skewed_width = width2 * skew
-
-    Quad cx - skewed_width, y_top,
-      cx + skewed_width, y_top,
-      cx + width2, y_bottom,
-      cx - width2, y_bottom
+  width: 500
+  height: 150
 
   new: =>
-    @ox, @oy = 0, 0
+    @ox, @oy = g.getWidth! / 2, g.getHeight! / 2
+    @box = Box -@width/2, -@height/2, @width, @height
+    @recalc!
 
-    base_skew = 0.8
-    tall_h = 120
-    short_h = 30
-
-    @floor = make_trapezoid 500, tall_h, base_skew
-
-    skew2 = base_skew + (1 - (short_h / tall_h)) * (1 - base_skew)
-
-    @floor2 = make_trapezoid 500, short_h, skew2
+  recalc: =>
+    @floor = system\project_box @box
 
   collides: (thing) =>
     box = thing.box or box
-    cx, cy = box\center!
-    not @floor\contains_pt cx, cy
+    false
+    -- cx, cy = box\center!
+    -- not @floor\contains_pt cx, cy
 
   draw: (callback) =>
     g.push!
@@ -191,24 +105,23 @@ class Platform
       @floor[3] - @floor[1], @wall_height
 
     @floor\draw 141, 142, 143, 83, 85, 86
-    @floor2\draw 100,200,100
 
     -- bottom wall
     g.setColor 60,60,60
     g.rectangle "fill", @floor[7], @floor[8],
       @floor[5] - @floor[7], @wall_height
 
+    g.pop!
+
     g.setColor 255,255,255
 
-    callback! if callback
-
-    g.pop!
 
   update: (dt, world) =>
     vec = movement_vector! * 100 * dt
-    @ox += vec[1]
-    @oy += vec[2]
-
+    unless vec\is_zero!
+      nil
+      @box\move unpack vec
+      @recalc!
 
 class Bullet extends Box
   size: 8
@@ -325,17 +238,12 @@ love.load = ->
   g.setBackgroundColor 52/2, 57/2, 61/2
   g.setPointSize 12
 
-  import SystemTest from require "system"
-
-  dispatch = Dispatcher SystemTest!
+  dispatch = Dispatcher Game!
   dispatch\bind love
 
   if reloader
-    print "installing reloader"
     old = love.update
     love.update = (...) ->
       reloader\update ...
       old ...
-
-
 
