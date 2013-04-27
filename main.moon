@@ -8,6 +8,23 @@ local *
 
 p = (str, ...) -> g.print str\lower!, ...
 
+barycentric_coords = (x1, y1, x2, y2, x3,y3, px, py) ->
+  det = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
+
+  b1 = (y2 - y3) * (px - x3) + (x3 - x2) * (py - y3)
+  b2 = (y3 - y1) * (px - x3) + (x1 - x3) * (py - y3)
+
+  b1 = b1 / det
+  b2 = b2 / det
+  b3 = 1 - b1 - b2
+
+  b1, b2, b3
+
+pt_in_tri = (...) ->
+  b1, b2, b3 = barycentric_coords ...
+  return false if b1 < 0 or b2 < 0 or b3 < 0
+  true
+
 class Quad
   -- clockwise from top left
   new: (x1, y1, x2, y2, x3, y3, x4, y4) =>
@@ -30,7 +47,7 @@ class Quad
       @[3], @[4],
       @[5], @[6]
 
-    g.setColor 255,255,255, 255
+    g.setColor 255,255,255, 64
     g.triangle "fill",
       @[1], @[2],
       @[5], @[6],
@@ -47,10 +64,21 @@ class Quad
     g.setColor 255,255,255
 
   contains_pt: (x,y) =>
+    return true if pt_in_tri @[1], @[2],
+      @[3], @[4],
+      @[5], @[6],
+      x,y
+
+    return true if pt_in_tri @[1], @[2],
+      @[5], @[6],
+      @[7], @[8],
+      x,y
+
     false
 
+
   __tostring: =>
-    ("vec2d<(%f, %f), (%f, %f), (%f, %f), (%f, %f)>")\format unpack @
+    "vec2d<(%f, %f), (%f, %f), (%f, %f), (%f, %f)>"\format unpack @
 
 class World
   new: (@game, @player) =>
@@ -89,6 +117,9 @@ class Game
   new: =>
     @player = Player 400, 400
     @world = World @, @player
+
+  mousepressed: (x,y) =>
+    print @world.thing\contains_pt x,y
 
   draw: =>
     @world\draw!
