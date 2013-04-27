@@ -391,11 +391,64 @@ class Player extends Entity
 
     @gun\update dt, world
 
+
+-- 3 point bezier
+bez3 = (x1, y1, x2, y2, x3, y3, t) ->
+  tt = 1 - t
+
+  x = tt * (tt * x1 + t * x2) + t * (tt * x2 + t * x3)
+  y = tt * (tt * y1 + t * y2) + t * (tt * y2 + t * y3)
+
+  x,y
+
+
+-- derivative of 3 point bez
+bez3_prime = (x1, y1, x2, y2, x3, y3, t) ->
+
+class Thing
+  speed: 200
+
+  new: (@x, @y) =>
+    @flip = false
+
+  update: (dt) =>
+    {:fx, :fy, :tx, :ty, :cx, :cy} = @
+
+    if tx and fx
+      @time += dt * @tscale
+      if @time > 1
+        @x, @y = @tx, @ty
+        @tx, @ty = nil, nil
+      else
+        @x, @y = bez3 fx, fy, cx, cy, tx, ty, @time
+
+  draw: =>
+    g.point @x ,@y
+
+  move_to: (@tx, @ty) =>
+    print "moving to", @tx, @ty
+    @time = 0
+    @fx, @fy = @x, @y
+
+    move = Vec2d(@tx - @fx, @ty - @fy)
+    move_len = move\len!
+    control_len = 1 + move_len / 4
+
+    dir = move\normalized!\cross!
+    dir = dir\flip! if @flip
+    @flip = not @flip
+
+    @cx = (@tx + @fx) / 2 + dir[1] * control_len
+    @cy = (@ty + @fy) / 2 + dir[2] * control_len
+
+    @tscale = 1 / move_len * @speed
+
 class Game
   show_fps: true
 
   new: =>
     @player = Player 0,0
+    @thing = Thing 100, 101
     @world = World @, @player
 
   on_key: (key, code) =>
@@ -403,10 +456,13 @@ class Game
       @paused = not @paused
 
   mousepressed: (x,y) =>
+    @thing\move_to x, y
+
     @world.entities\add Bullet(@player.gun.dir, @player.gun\tip!)
 
   draw: =>
     @world\draw!
+    @thing\draw!
 
     if @show_fps
       g.scale 2
@@ -415,6 +471,8 @@ class Game
   update: (dt) =>
     return if @paused
     @world\update dt
+    @thing\update dt
+
 
 love.load = ->
   g.setBackgroundColor 10, 6, 9
