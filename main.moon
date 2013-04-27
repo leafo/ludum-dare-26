@@ -118,10 +118,8 @@ class Platform
 
   update: (dt, world) =>
     vec = movement_vector! * 100 * dt
-    unless vec\is_zero!
-      nil
-      @box\move unpack vec
-      @recalc!
+    @ox += vec[1]
+    @oy += vec[2]
 
 class Bullet extends Box
   size: 8
