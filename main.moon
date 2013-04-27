@@ -53,15 +53,15 @@ class Quad
       @[5], @[6],
       @[7], @[8]
 
-    g.setColor 255,100,100
-    g.point @[1], @[2]
-    g.setColor 100,255,100
-    g.point @[3], @[4]
-    g.setColor 100,100,255
-    g.point @[5], @[6]
-    g.setColor 100,255,255
-    g.point @[7], @[8]
-    g.setColor 255,255,255
+    -- g.setColor 255,100,100
+    -- g.point @[1], @[2]
+    -- g.setColor 100,255,100
+    -- g.point @[3], @[4]
+    -- g.setColor 100,100,255
+    -- g.point @[5], @[6]
+    -- g.setColor 100,255,255
+    -- g.point @[7], @[8]
+    -- g.setColor 255,255,255
 
   contains_pt: (x,y) =>
     return true if pt_in_tri @[1], @[2],
@@ -83,28 +83,66 @@ class World
   new: (@game, @player) =>
     @entities = DrawList!
 
-    @floor = Quad 100, 100,
-      200, 120,
-      220, 220,
-      80, 210
+    @platform = Platform!
 
   draw: =>
-    @floor\draw!
+    @platform\draw!
     @player\draw!
     @entities\draw!
+
+  collides: (thing) =>
+    @platform\collides thing
+
+  update: (dt) =>
+    @player\update dt, @
+    @entities\update dt, @
+
+class Platform
+  wall_height: 15
+
+  new: =>
+    width = 500
+    height = 150
+    skew = 0.8
+    cx, cy = g.getWidth! / 2, g.getHeight! / 2
+
+    height2 = height/2
+    width2 = width/2
+
+    y_top = cy - height2
+    y_bottom = cy + height2
+
+    skewed_width = width2 * skew
+
+    @floor = Quad cx - skewed_width, y_top,
+      cx + skewed_width, y_top,
+      cx + width2, y_bottom,
+      cx - width2, y_bottom
 
   collides: (thing) =>
     box = thing.box or box
     cx, cy = box\center!
     not @floor\contains_pt cx, cy
 
-  update: (dt) =>
-    @player\update dt, @
-    @entities\update dt, @
+  draw: =>
+    -- top wall
+    g.rectangle "fill", @floor[1], @floor[2] - @wall_height,
+      @floor[3] - @floor[1], @wall_height
+
+    @floor\draw!
+
+    -- bottom wall
+    g.setColor 60,60,60
+    g.rectangle "fill", @floor[7], @floor[8],
+      @floor[5] - @floor[7], @wall_height
+
+    g.setColor 255,255,255
+
+  update: (dt, world) =>
 
 class Bullet extends Box
   size: 8
-  speed: 300
+  speed: 500
 
   new: (@vel, x, y) =>
     half = @size / 2
@@ -186,7 +224,7 @@ class Game
   show_fps: true
 
   new: =>
-    @player = Player 152, 162
+    @player = Player 444, 250
     @world = World @, @player
 
   on_key: (key, code) =>
@@ -194,6 +232,7 @@ class Game
       @paused = not @paused
 
   mousepressed: (x,y) =>
+    print x,y
     @world.entities\add Bullet(@player.gun.dir, @player.gun\tip!)
 
   draw: =>
