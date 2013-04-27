@@ -1,4 +1,6 @@
 
+
+reloader = require "lovekit.reloader"
 require "lovekit.all"
 
 {graphics: g, :timer, :mouse, :keyboard} = love
@@ -24,6 +26,7 @@ pt_in_tri = (...) ->
   b1, b2, b3 = barycentric_coords ...
   return false if b1 < 0 or b2 < 0 or b3 < 0
   true
+
 
 class Quad
   -- clockwise from top left
@@ -322,6 +325,17 @@ love.load = ->
   g.setBackgroundColor 52/2, 57/2, 61/2
   g.setPointSize 12
 
-  dispatch = Dispatcher Game!
+  import SystemTest from require "system"
+
+  dispatch = Dispatcher SystemTest!
   dispatch\bind love
+
+  if reloader
+    print "installing reloader"
+    old = love.update
+    love.update = (...) ->
+      reloader\update ...
+      old ...
+
+
 
