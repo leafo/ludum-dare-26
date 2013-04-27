@@ -5,8 +5,8 @@ export *
 class EnemySpawner extends Sequence
   new: (@world) =>
     super ->
-      wait 1.0
       @world.entities\add Enemy 0, 100, Vec2d(100, 0)
+      wait 1.0
       again!
 
   draw: =>
@@ -26,7 +26,9 @@ class Enemy extends Box
     if thing.is_bullet
       thing.alive = false
       @life -= 50
-      world.particles\add Sparks world, thing\center!
+
+      spray_dir = thing.vel\normalized!
+      world.particles\add Sparks spray_dir, world, thing\center!
 
   update: (dt, world) =>
     @vel\adjust unpack @accel * dt

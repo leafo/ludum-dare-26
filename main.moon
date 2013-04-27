@@ -46,8 +46,8 @@ class World
     @player\draw!
     @platform\draw_wheels!
 
-    @particles\draw!
     @entities\draw!
+    @particles\draw!
     g.setColor 255,255,255
 
   collides: (thing) =>
@@ -403,7 +403,6 @@ class Game
       @paused = not @paused
 
   mousepressed: (x,y) =>
-    print x,y
     @world.entities\add Bullet(@player.gun.dir, @player.gun\tip!)
 
   draw: =>
