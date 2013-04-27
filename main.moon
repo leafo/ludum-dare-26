@@ -1,5 +1,4 @@
 
-
 reloader = require "lovekit.reloader"
 require "lovekit.all"
 
@@ -11,6 +10,7 @@ local *
 p = (str, ...) -> g.print str\lower!, ...
 
 require "system"
+require "bullets"
 require "particles"
 require "enemies"
 
@@ -73,6 +73,9 @@ class World
       continue unless e.is_enemy
       for thing in *@collide\get_touching e
         e\take_hit thing, @
+
+    for thing in *@collide\get_touching @player.box
+      @player\take_hit thing, @
 
 class Ground
   width: 0.7 -- of screen
@@ -246,40 +249,6 @@ class Platform
     -- @ox += vec[1]
     -- @oy += vec[2]
 
-class Bullet extends Box
-  size: 8
-  speed: 500
-  is_bullet: true
-
-  new: (@vel, x, y) =>
-    half = @size / 2
-
-    super f(x - half), f(y - half), @size, @size
-
-    @rads = @vel\normalized!\radians!
-    @life = 3
-
-  draw: =>
-    -- hitbox
-    g.rectangle "line", @x, @y, @w, @h
-
-    -- trail
-    g.setColor 255, 246, 119
-    g.push!
-    g.translate @center!
-
-    g.scale 3, 3
-    g.rotate @rads
-    g.rectangle "fill", -5, -1, 5, 2
-    g.pop!
-    g.setColor 255, 255, 255
-
-
-  update: (dt, world) =>
-    @move unpack @vel * @speed * dt
-
-    @life -= dt
-    @life > 0
 
 class Wheel
   segments: 6
@@ -393,6 +362,11 @@ class Player extends Entity
 
     @gun\update dt, world
 
+  take_hit: (thing, world) =>
+    if thing.is_enemy_bullet
+      spray_dir = thing.vel\normalized!\flip!
+      thing.alive = false
+      world.particles\add BloodSquirt spray_dir, world, thing\center!
 
 class Game
   show_fps: true
@@ -418,8 +392,6 @@ class Game
   update: (dt) =>
     return if @paused
     @world\update dt
-    @thing\update dt
-
 
 love.load = ->
   g.setBackgroundColor 10, 6, 9

@@ -4,25 +4,23 @@
 
 export *
 
-class Sparks extends Emitter
-  new: (@dir, ...) =>
-    super ...
-
-  make_particle: (x,y) =>
-    Spark x,y, @dir\rotate(rand -1, 1) * Spark.speed
+lazy_value Particle, "sprite", ->
+  Spriter "img/sprite.png", 32, 32
 
 class Spark extends Particle
   life: 2.0
   speed: 300
+  gravity: 300
+  cell: 0
 
-  lazy_value @, "sprite", ->
-    Spriter "img/sprite.png", 32, 32
+  min_mod: -1.0
+  max_mod: 1.0
 
   new: (...) =>
     super ...
     @time = 0
-    @mod = rand -1.0, 1.0
-    @accel[2] = 300
+    @mod = rand @min_mod, @max_mod
+    @accel[2] = @gravity
 
   draw: =>
     g.push!
@@ -32,12 +30,36 @@ class Spark extends Particle
     s = @mod + 1.5
     g.scale s,s
 
-    g.setColor 255,255,255, 255 * (1 - @p!)
-    @sprite\draw 0, -16, -16
+    g.setColor @r, @g, @b, 255 * (1 - @p!)
+    @sprite\draw @cell, -16, -16
     g.pop!
 
   update: (dt, ...) =>
     @time += dt
     super dt, ...
     
+class Blood extends Spark
+  gravity: 700
+  life: 1.0
+  min_mod: 0
+  cell: 1
+
+
+class DirectionalEmitter extends Emitter
+  type: nil
+  width: 1
+
+  new: (@dir, ...) =>
+    super ...
+
+  make_particle: (x,y) =>
+    particle_cls = @type
+    particle_cls x,y, @dir\rotate(rand -@width, @width) * particle_cls.speed
+
+class Sparks extends DirectionalEmitter
+  type: Spark
+
+class BloodSquirt extends DirectionalEmitter
+  type: Blood
+
 nil

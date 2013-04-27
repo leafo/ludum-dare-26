@@ -98,8 +98,13 @@ class Enemy extends Box
 
   new: (@x, @y, @vel=Vec2d(0,0), @accel=Vec2d(0,0))=>
 
+  shoot: (world, dir) =>
+    dir = (Vec2d(world.player.box\center!) - Vec2d(@center!))\normalized!
+
+    world.entities\add EnemyBullet dir, @x, @y
+
   take_hit: (thing, world) =>
-    if thing.is_bullet
+    if thing.is_bullet and not thing.is_enemy_bullet
       thing.alive = false
       @life -= 50
 
@@ -115,7 +120,6 @@ class Enemy extends Box
   draw: =>
     super @color
 
-
 Sequence.default_scope.bezier_move_to = (thing, tx, ty, speed) ->
   speed or= thing.speed
 
@@ -127,8 +131,7 @@ Sequence.default_scope.bezier_move_to = (thing, tx, ty, speed) ->
   control_len = 1 + move_len / 4
 
   dir = move\normalized!\cross!
-  -- dir = dir\flip! if @flip
-  -- @flip = not @flip
+  dir = dir\flip! if math.random! > 0.5
 
   cx = (tx + fx) / 2 + dir[1] * control_len
   cy = (ty + fy) / 2 + dir[2] * control_len
@@ -192,9 +195,11 @@ class PathEnemy extends Enemy
     @seq = Sequence ->
       for {x,y} in *@targets
         bezier_move_to @, x, y
+        @shoot @world
         wait rand 0.3, 0.7
 
   update: (dt, world) =>
+    @world = world
     @seq\update(dt) and @life > 0
 
 nil
