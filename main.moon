@@ -8,9 +8,11 @@ require "lovekit.all"
 
 local *
 
+
 p = (str, ...) -> g.print str\lower!, ...
 
 import TrapSystem from require "system"
+import EnemySpawner, Enemy from require "enemies"
 
 system = TrapSystem 0.002
 
@@ -27,9 +29,15 @@ shadow = (box) ->
 
 class World
   new: (@game, @player) =>
-    @entities = DrawList!
+    @entities = DrawList! -- things that collide
+    @particles = DrawList! -- things that don't collide
+
+    @collide = UniformGrid!
+
     @platform = Platform!
     @ground = Ground!
+
+    @particles\add EnemySpawner @
 
   draw: =>
     @ground\draw!
@@ -38,7 +46,9 @@ class World
     @player\draw!
     @platform\draw_wheels!
 
+    @particles\draw!
     @entities\draw!
+    g.setColor 255,255,255
 
   collides: (thing) =>
     @platform\collides thing
@@ -46,8 +56,21 @@ class World
   update: (dt) =>
     @platform\update dt, @
     @player\update dt, @
+    @particles\update dt, @
     @entities\update dt, @
     @ground\update dt, @
+
+    -- collision
+    @collide\clear!
+    @collide\add @player.box, @player
+    for e in *@entities
+      if e.alive != false
+        @collide\add e
+
+    for e in *@entities
+      continue unless e.is_enemy
+      for thing in *@collide\get_touching e
+        e\take_hit thing, @
 
 class Ground
   width: 0.7 -- of screen
@@ -98,7 +121,7 @@ class Platform
   inner_width: 580
 
   new: =>
-    @ox, @oy = g.getWidth! / 2, g.getHeight! / 2
+    @ox, @oy = g.getWidth! / 2, g.getHeight! * (2/3)
     @elapsed = 0
 
     @box = Box -@width/2, -@height/2, @width, @height
@@ -224,6 +247,7 @@ class Platform
 class Bullet extends Box
   size: 8
   speed: 500
+  is_bullet: true
 
   new: (@vel, x, y) =>
     half = @size / 2
