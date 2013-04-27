@@ -76,8 +76,11 @@ class EnemySpawner extends Sequence
     super ->
       targets = PathEnemy\gen_targets @world, 2
 
+      ix = @world.box.x - 100
+      iy = rand -200, @world.box.h * 0.4
+
       -- @world.entities\add Enemy 0, 100, Vec2d(100, 0)
-      @world.entities\add PathEnemy 0,0, targets
+      @world.entities\add PathEnemy ix, iy, targets
 
       wait 2.0
       again!
@@ -134,8 +137,10 @@ Sequence.default_scope.bezier_move_to = (thing, tx, ty, speed) ->
 
   time = 0
   remaining = 0
+
+  before_x, before_y = fx, fy
+
   while time < 1
-    before = time
     dt = coroutine.yield!
     time += dt * tscale
 
@@ -144,11 +149,13 @@ Sequence.default_scope.bezier_move_to = (thing, tx, ty, speed) ->
       time = 1
 
     -- wow this is lame
-    ax, ay = bez3 fx, fy, cx, cy, tx, ty, before
-    bx, by = bez3 fx, fy, cx, cy, tx, ty, time
+    nx, ny = bez3 fx, fy, cx, cy, tx, ty, smoothstep 0, 1, time
 
-    dx = bx - ax
-    dy = by - ay
+    dx = nx - before_x
+    dy = ny - before_y
+
+    before_x = nx
+    before_y = ny
 
     thing.x += dx
     thing.y += dy
@@ -180,10 +187,12 @@ class PathEnemy extends Enemy
   speed: 200
 
   new: (@x, @y, @targets) =>
+    @speed = rand 150, 250
+
     @seq = Sequence ->
       for {x,y} in *@targets
         bezier_move_to @, x, y
-        wait 0.5
+        wait rand 0.3, 0.7
 
   update: (dt, world) =>
     @seq\update(dt) and @life > 0

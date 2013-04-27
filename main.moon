@@ -399,7 +399,6 @@ class Game
 
   new: =>
     @player = Player 0,0
-    @thing = Thing 100, 101
     @world = World @, @player
 
   on_key: (key, code) =>
@@ -407,13 +406,10 @@ class Game
       @paused = not @paused
 
   mousepressed: (x,y) =>
-    @thing\move_to x, y
-
     @world.entities\add Bullet(@player.gun.dir, @player.gun\tip!)
 
   draw: =>
     @world\draw!
-    @thing\draw!
 
     if @show_fps
       g.scale 2
