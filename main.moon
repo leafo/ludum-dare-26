@@ -13,6 +13,7 @@ require "system"
 require "bullets"
 require "particles"
 require "enemies"
+require "hud"
 
 system = TrapSystem 0.002
 
@@ -124,6 +125,9 @@ class Platform
   wall_height: 20
   width: 500
   height: 150
+
+  min_oy: 197
+  max_oy: 402
 
   inner_height: 40
   inner_width: 580
@@ -242,16 +246,23 @@ class Platform
   move: (dy) =>
     @oy += dy / 5
 
+    if @oy > @max_oy
+      @oy = @max_oy
+
+    if @oy < @min_oy
+      @oy = @min_oy
+
+  position: =>
+    (@oy - @min_oy) / (@max_oy - @min_oy)
+
+  segment: =>
+    f(_min(@position! * 3, 2)) + 1
+
   update: (dt, world) =>
     @elapsed += dt
 
     for w in *@wheels
       w\update dt
-
-    -- vec = movement_vector! * 100 * dt
-    -- @ox += vec[1]
-    -- @oy += vec[2]
-
 
 class Wheel
   segments: 6
@@ -402,6 +413,7 @@ class Game
   new: =>
     @player = Player 0,0
     @world = World @, @player
+    @hud = Hud @world
 
   on_key: (key, code) =>
     if key == "p"
@@ -412,16 +424,19 @@ class Game
 
   draw: =>
     @world\draw!
+    @hud\draw!
 
     if @show_fps
       g.scale 2
       p tostring(timer.getFPS!), 0,0
       p tostring("z: #{@player.z}"), 0,10
-      p tostring("jt: #{@player.jump_time}"), 0,20
+      p tostring("cy: #{@world.platform.oy}"), 0,20
+      p tostring("pp: #{@world.platform\position!}"), 0,30
 
   update: (dt) =>
     return if @paused
     @world\update dt
+    @hud\update dt, @world
 
 love.load = ->
   g.setBackgroundColor 10, 6, 9

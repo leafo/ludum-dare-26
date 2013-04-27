@@ -21,6 +21,8 @@ pt_in_tri = (...) ->
   true
 
 class Quad
+  a: 255
+
   -- clockwise from top left
   new: (x1, y1, x2, y2, x3, y3, x4, y4) =>
     @[1] = x1
@@ -36,13 +38,13 @@ class Quad
     @[8] = y4
 
   draw: (top_r, top_g, top_b, bot_r=top_r, bot_g=top_g, bot_b=top_b) =>
-    g.setColor top_r, top_g, top_b
+    g.setColor top_r, top_g, top_b, @a
     g.triangle "fill",
       @[1], @[2],
       @[3], @[4],
       @[5], @[6]
 
-    g.setColor bot_r, bot_g, bot_b
+    g.setColor bot_r, bot_g, bot_b, @a
     g.triangle "fill",
       @[1], @[2],
       @[5], @[6],
