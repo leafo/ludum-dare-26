@@ -23,8 +23,8 @@ class World
   draw: =>
     @ground\draw!
 
-    @platform\draw ->
-      @player\draw!
+    @platform\draw!
+    @player\draw!
 
     @entities\draw!
 
@@ -91,10 +91,10 @@ class Platform
     @floor = system\project_box @box
 
   collides: (thing) =>
-    box = thing.box or box
-    false
-    -- cx, cy = box\center!
-    -- not @floor\contains_pt cx, cy
+    if pt = thing.pos
+      not @box\touches_pt pt.x, pt.y
+    else
+      false
 
   draw: (callback) =>
     g.push!
@@ -111,10 +111,9 @@ class Platform
     g.rectangle "fill", @floor[7], @floor[8],
       @floor[5] - @floor[7], @wall_height
 
-    g.pop!
-
     g.setColor 255,255,255
 
+    g.pop!
 
   update: (dt, world) =>
     vec = movement_vector! * 100 * dt
@@ -165,7 +164,7 @@ class Gun extends Box
     @dir = Vec2d 1,0
 
   tip: =>
-    unpack Vec2d(@length, 0)\rotate(@dir\radians!)\adjust @entity\world_center!
+    unpack Vec2d(@length, 0)\rotate(@dir\radians!)\adjust @entity.box\center!
 
   draw: (gx, gy) =>
     g.push!
@@ -180,26 +179,39 @@ class Gun extends Box
 
 class Player extends Entity
   mover = make_mover "w", "s", "a", "d"
-  speed: 140
 
+  w: 20
+  h: 40
+
+  ox: 10
+  oy: 40
+
+  speed: 200
+
+  -- box holds world coordinates
+  -- pos is position in system coordintes
   new: (x=0, y=0) =>
-    super nil, x, y
+    @pos = { :x, :y }
     @gun = Gun @
+    @box = Box 0,0, @w, @h
+
+  update_box: (world) =>
+    x, y = system\project @pos.x, @pos.y
+    @box.x = x + world.platform.ox - @ox
+    @box.y = y + world.platform.oy - @oy
 
   draw: =>
+    return unless @box
     @box\draw!
     g.setColor 255,100,100
     @gun\draw @box\center!
     g.setColor 255,255,255
 
-  world_center: =>
-    @wx + @box.w / 2, @wy + @box.h / 2
-
   update: (dt, world) =>
     dir = mover(@speed) * dt
-    @fit_move dir[1], dir[2], world
+    @fit_move dir[1], dir[2], world, @pos
 
-    @wx, @wy = @box.x + world.platform.ox, @box.y + world.platform.oy
+    @update_box world
 
     mx, my = mouse.getPosition!
     @gun.dir = (Vec2d(mx, my) - Vec2d(@box\center!))\normalized!
@@ -210,7 +222,7 @@ class Game
   show_fps: true
 
   new: =>
-    @player = Player 444, 250
+    @player = Player 0,0
     @world = World @, @player
 
   on_key: (key, code) =>
