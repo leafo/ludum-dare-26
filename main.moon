@@ -401,9 +401,14 @@ bez3 = (x1, y1, x2, y2, x3, y3, t) ->
 
   x,y
 
-
 -- derivative of 3 point bez
 bez3_prime = (x1, y1, x2, y2, x3, y3, t) ->
+  tt = 1 - t
+
+  x = 2 * tt * (x2 - x1) + 2 * t * (x3 - x2)
+  y = 2 * tt * (y2 - y1) + 2 * t * (y3 - y2)
+
+  x,y
 
 class Thing
   speed: 200
@@ -415,12 +420,21 @@ class Thing
     {:fx, :fy, :tx, :ty, :cx, :cy} = @
 
     if tx and fx
+      before = @time
       @time += dt * @tscale
       if @time > 1
         @x, @y = @tx, @ty
         @tx, @ty = nil, nil
       else
-        @x, @y = bez3 fx, fy, cx, cy, tx, ty, @time
+        -- wow this is lame
+        ax, ay = bez3 fx, fy, cx, cy, tx, ty, before
+        bx, by = bez3 fx, fy, cx, cy, tx, ty, @time
+
+        dx = bx - ax
+        dy = by - ay
+
+        @x += dx
+        @y += dy
 
   draw: =>
     g.point @x ,@y
