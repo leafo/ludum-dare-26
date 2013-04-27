@@ -76,7 +76,6 @@ class Quad
 
     false
 
-
   __tostring: =>
     "vec2d<(%f, %f), (%f, %f), (%f, %f), (%f, %f)>"\format unpack @
 
@@ -84,22 +83,26 @@ class World
   new: (@game, @player) =>
     @entities = {}
 
-    @thing = Quad 100, 100,
+    @floor = Quad 100, 100,
       200, 120,
       220, 220,
       80, 210
 
   draw: =>
+    @floor\draw!
     @player\draw!
 
-    @thing\draw!
+  collides: (thing) =>
+    box = thing.box or box
+    cx, cy = box\center!
+    not @floor\contains_pt cx, cy
 
   update: (dt) =>
     @player\update dt, @
 
 class Player extends Entity
   mover = make_mover "w", "s", "a", "d"
-  speed: 100
+  speed: 140
 
   new: (x=0, y=0) =>
     super nil, x, y
@@ -109,17 +112,18 @@ class Player extends Entity
 
   update: (dt, world) =>
     dir = mover(@speed) * dt
-    @box\move unpack dir
+    @fit_move dir[1], dir[2], world
 
 class Game
   show_fps: true
 
   new: =>
-    @player = Player 400, 400
+    @player = Player 152, 162
     @world = World @, @player
 
   mousepressed: (x,y) =>
-    print @world.thing\contains_pt x,y
+    print x,y
+    print @world.floor\contains_pt x,y
 
   draw: =>
     @world\draw!
