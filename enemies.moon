@@ -193,10 +193,11 @@ class PathEnemy extends Enemy
     @speed = rand 150, 250
 
     @seq = Sequence ->
-      for {x,y} in *@targets
+      for i, {x,y} in ipairs @targets
         bezier_move_to @, x, y
-        @shoot @world
-        wait rand 0.3, 0.7
+        unless i == #@targets
+          @shoot @world
+          wait rand 0.3, 0.7
 
   update: (dt, world) =>
     @world = world

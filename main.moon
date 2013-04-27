@@ -3,7 +3,7 @@ reloader = require "lovekit.reloader"
 require "lovekit.all"
 
 {graphics: g, :timer, :mouse, :keyboard} = love
-{floor: f, min: _min, :cos, :sin, :abs} = math
+{floor: f, min: _min, :cos, :sin, :abs, :sqrt} = math
 
 local *
 
@@ -18,14 +18,17 @@ system = TrapSystem 0.002
 
 bump = (t) -> sin(t*2) * cos(t*8)
 
-shadow = (box) ->
+shadow = (box, z_height=0) ->
   {:w, :h, :x, :y} = box
 
   g.setColor 0,0,0, 80
   sw = w * 1.5
   sh = 7
 
-  g.rectangle "fill", x + (w - sw) / 2,  y  + h - sh/2, sw, sh
+  g.rectangle "fill",
+    x + (w - sw) / 2,
+    y + h - sh/2 + z_height,
+    sw, sh
 
 class World
   new: (@game, @player) =>
@@ -320,6 +323,8 @@ class Player extends Entity
   ox: 10
   oy: 40
 
+  za: -1400
+
   speed: 200
 
   -- box holds world coordinates
@@ -329,10 +334,14 @@ class Player extends Entity
     @gun = Gun @
     @box = Box 0,0, @w, @h
 
+    -- z velocity, accel
+    @zv = 0
+    @z = 0
+
   update_box: (world) =>
     x, y = system\project @pos.x, @pos.y
     @box.x = x + world.platform.ox - @ox
-    @box.y = y + world.platform.oy - @oy
+    @box.y = y + world.platform.oy - @oy - @z
 
   draw: =>
     return unless @box
@@ -340,7 +349,7 @@ class Player extends Entity
       g.setColor 100, 200, 100
 
     -- shadow
-    shadow @box
+    shadow @box, @z
 
     g.setColor 255,255,255
     @box\draw!
@@ -351,6 +360,25 @@ class Player extends Entity
   update: (dt, world) =>
     dir = mover(@speed) * dt
     cx, cy = @fit_move dir[1], dir[2], world, @pos
+
+    max_jump_time = 0.2
+    if keyboard.isDown " "
+      if not @jump_time or @jump_time < max_jump_time
+        @jump_time or= 0
+        @jump_time += dt
+        pp = @jump_time / max_jump_time
+        @zv = sqrt(pp) * 400
+    else
+      if @z == 0
+        @jump_time = nil
+      else
+        @jump_time = max_jump_time
+
+    @zv += dt * @za
+    @z += @zv * dt
+    if @z < 0
+      @zv = 0
+      @z = 0
 
     if @in_control_zone and cy
       world.platform\move dir[2]
@@ -376,7 +404,7 @@ class Game
     @world = World @, @player
 
   on_key: (key, code) =>
-    if key == " "
+    if key == "p"
       @paused = not @paused
 
   mousepressed: (x,y) =>
@@ -388,6 +416,8 @@ class Game
     if @show_fps
       g.scale 2
       p tostring(timer.getFPS!), 0,0
+      p tostring("z: #{@player.z}"), 0,10
+      p tostring("jt: #{@player.jump_time}"), 0,20
 
   update: (dt) =>
     return if @paused
