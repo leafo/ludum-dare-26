@@ -92,6 +92,11 @@ class Platform
     @inner_box = Box -@inner_width/2, -@inner_height/2, @inner_width, @inner_height
     @recalc!
 
+    @wheels = {
+      Wheel 50, 5, -10
+      Wheel 50, -5, -10
+    }
+
   recalc: =>
     @floor = system\project_box @box
     @inner_floor = system\project_box @inner_box
@@ -125,12 +130,25 @@ class Platform
 
     g.setColor 255,255,255
 
+
+    wheel_inset = 60
+    -- wheel 1
+    wx, wy = system\project @box.x, @box.y + @box.h
+    @wheels[1]\draw wx + wheel_inset, wy + 30
+
+    -- wheel 2
+    wx, wy = system\project @box.x + @box.w, @box.y + @box.h
+    @wheels[2]\draw wx - wheel_inset, wy + 30
+
     g.pop!
 
   move: (dy) =>
     @oy += dy / 5
 
   update: (dt, world) =>
+    for w in *@wheels
+      w\update dt
+
     -- vec = movement_vector! * 100 * dt
     -- @ox += vec[1]
     -- @oy += vec[2]
@@ -168,6 +186,44 @@ class Bullet extends Box
 
     @life -= dt
     @life > 0
+
+class Wheel
+  segments: 6
+  speed: 6
+  num_lines: 15
+
+  new: (@radius, @ox, @oy)=>
+    @elapsed = 0
+
+  update: (dt) =>
+    @elapsed += dt * @speed
+
+  draw: (cx, cy) =>
+    -- back
+    g.setColor 80,80,80
+    g.push!
+    g.translate cx + @ox, cy + @oy
+    g.rotate @elapsed
+    g.circle "fill", 0,0, @radius, @segments
+    g.pop!
+
+    -- lines
+    g.setColor 180,180,180
+
+    line_dir = Vec2d(@radius, 0)\rotate @elapsed
+    for rad= 0, 2*math.pi, 2*math.pi / @num_lines
+      l = line_dir\rotate rad
+      lx, ly = cx + l[1], cy + l[2]
+      g.line lx, ly, lx + @ox, ly + @oy
+
+    -- front
+    g.setColor 200,200,200
+    g.push!
+    g.translate cx, cy
+    g.rotate @elapsed
+    g.circle "fill", 0,0, @radius, @segments
+    g.pop!
+
 
 class Gun extends Box
   ox: 2
