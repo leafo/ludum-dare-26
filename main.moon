@@ -16,6 +16,15 @@ system = TrapSystem 0.002
 
 bump = (t) -> sin(t*2) * cos(t*8)
 
+shadow = (box) ->
+  {:w, :h, :x, :y} = box
+
+  g.setColor 0,0,0, 80
+  sw = w * 1.5
+  sh = 7
+
+  g.rectangle "fill", x + (w - sw) / 2,  y  + h - sh/2, sw, sh
+
 class World
   new: (@game, @player) =>
     @entities = DrawList!
@@ -25,8 +34,9 @@ class World
   draw: =>
     @ground\draw!
 
-    @platform\draw!
+    @platform\draw_body!
     @player\draw!
+    @platform\draw_wheels!
 
     @entities\draw!
 
@@ -115,7 +125,52 @@ class Platform
 
     true
 
-  draw: (callback) =>
+  transformed: (fn) =>
+    elapsed = @elapsed
+
+    g.push!
+    g.translate @ox, @oy
+
+    g.rotate sin(elapsed * 10) * 0.02
+
+    g.translate cos(elapsed * 6) * 5,
+      cos(elapsed * 12) * 3
+
+    fn elapsed
+
+    g.pop!
+
+  draw_body: =>
+    @transformed ->
+      g.setColor 200,200,200
+
+      -- top wall
+      g.rectangle "fill", @floor[1], @floor[2] - @wall_height,
+        @floor[3] - @floor[1], @wall_height
+
+      @inner_floor\draw 106, 109, 111
+      @floor\draw 141, 142, 143, 83, 85, 86
+
+      -- bottom wall
+      g.setColor 60,60,60
+      g.rectangle "fill", @floor[7], @floor[8],
+        @floor[5] - @floor[7], @wall_height
+
+      g.setColor 255,255,255
+
+  draw_wheels: =>
+    @transformed (elapsed) ->
+      wheel_inset = 60
+      -- wheel 1
+      wx, wy = system\project @box.x, @box.y + @box.h
+      @wheels[1]\draw wx + wheel_inset, wy + 30 + bump(elapsed*2) * 10
+
+      -- wheel 2
+      wx, wy = system\project @box.x + @box.w, @box.y + @box.h
+      @wheels[2]\draw wx - wheel_inset, wy + 30 + bump(elapsed*2 + 0.8) * 10
+
+
+  draw: =>
     { :elapsed } = @
 
     g.push!
@@ -289,6 +344,10 @@ class Player extends Entity
     if @in_control_zone
       g.setColor 100, 200, 100
 
+    -- shadow
+    shadow @box
+
+    g.setColor 255,255,255
     @box\draw!
     g.setColor 255,100,100
     @gun\draw @box\center!
