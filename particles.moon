@@ -45,6 +45,35 @@ class Blood extends Spark
   cell: 1
 
 
+class Shrapnel extends Spark
+  min_mod: 0
+  max_mod: 2
+
+  cell: 2
+
+
+class Smoke extends Spark
+  speed: 200
+  gravity: -400
+
+  life: 2.0
+
+  min_mod: 1
+  max_mod: 3
+
+  cell: 3
+
+class Flare extends Spark
+  speed: 200
+  gravity: -400
+
+  life: 0.8
+
+  min_mod: 1
+  max_mod: 3
+
+  cell: 4
+
 class DirectionalEmitter extends Emitter
   type: nil
   width: 1
@@ -61,5 +90,14 @@ class Sparks extends DirectionalEmitter
 
 class BloodSquirt extends DirectionalEmitter
   type: Blood
+
+class Explosion extends Emitter
+  make_particle: (x,y) =>
+    with @world.particles
+      \add Smoke x,y, Vec2d(0,1)\rotate(rand 0, math.pi*2) * Smoke.speed
+      \add Spark x,y, Vec2d(0,1)\rotate(rand 0, math.pi*2) * Spark.speed
+      \add Flare x,y, Vec2d(0,1)\rotate(rand 0, math.pi*2) * Flare.speed
+
+    Shrapnel x,y, Vec2d(0,1)\rotate(rand 0, math.pi*2) * Shrapnel.speed
 
 nil
