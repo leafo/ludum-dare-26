@@ -1,6 +1,6 @@
 
-reloader = require "lovekit.reloader"
 require "lovekit.all"
+reloader = require "lovekit.reloader"
 
 {graphics: g, :timer, :mouse, :keyboard} = love
 {floor: f, min: _min, :cos, :sin, :abs, :sqrt} = math
@@ -15,22 +15,11 @@ require "particles"
 require "enemies"
 require "hud"
 require "levels"
+require "player"
 
 system = TrapSystem 0.002
 
 bump = (t) -> sin(t*2) * cos(t*8)
-
-shadow = (box, z_height=0) ->
-  {:w, :h, :x, :y} = box
-
-  g.setColor 0,0,0, 80
-  sw = w * 1.5
-  sh = 7
-
-  g.rectangle "fill",
-    x + (w - sw) / 2,
-    y + h - sh/2 + z_height,
-    sw, sh
 
 export ^
 
@@ -253,110 +242,6 @@ class Wheel
     g.circle "fill", 0,0, @radius, @segments
     g.pop!
 
-class Gun extends Box
-  ox: 2
-  oy: 5
-
-  length: 20
-
-  new: (@entity) =>
-    @dir = Vec2d 1,0
-
-  tip: =>
-    unpack Vec2d(@length, 0)\rotate(@dir\radians!)\adjust @entity.box\center!
-
-  draw: (gx, gy) =>
-    g.push!
-    g.translate gx, gy
-
-    g.rotate @dir\radians!
-    g.translate -@ox, -@oy
-    g.rectangle "fill", 0, 0, 20, 10
-    g.pop!
-
-  update: (dt) =>
-
-class Player extends Entity
-  mover = make_mover "w", "s", "a", "d"
-
-  w: 20
-  h: 40
-
-  ox: 10
-  oy: 40
-
-  za: -1400
-
-  speed: 200
-
-  -- box holds world coordinates
-  -- pos is position in system coordintes
-  new: (x=0, y=0) =>
-    @pos = { :x, :y }
-    @gun = Gun @
-    @box = Box 0,0, @w, @h
-
-    -- z velocity, accel
-    @zv = 0
-    @z = 0
-
-  update_box: (world) =>
-    x, y = system\project @pos.x, @pos.y
-    @box.x = x + world.platform.ox - @ox
-    @box.y = y + world.platform.oy - @oy - @z
-
-  draw: =>
-    return unless @box
-    if @in_control_zone
-      g.setColor 100, 200, 100
-
-    -- shadow
-    shadow @box, @z
-
-    g.setColor 255,255,255
-    @box\draw!
-    g.setColor 255,100,100
-    @gun\draw @box\center!
-    g.setColor 255,255,255
-
-  update: (dt, world) =>
-    dir = mover(@speed) * dt
-    cx, cy = @fit_move dir[1], dir[2], world, @pos
-
-    max_jump_time = 0.2
-    if keyboard.isDown " "
-      if not @jump_time or @jump_time < max_jump_time
-        @jump_time or= 0
-        @jump_time += dt
-        pp = @jump_time / max_jump_time
-        @zv = sqrt(pp) * 400
-    else
-      if @z == 0
-        @jump_time = nil
-      else
-        @jump_time = max_jump_time
-
-    @zv += dt * @za
-    @z += @zv * dt
-    if @z < 0
-      @zv = 0
-      @z = 0
-
-    if @in_control_zone and cy
-      world.platform\move dir[2]
-
-    @update_box world
-
-    mx, my = mouse.getPosition!
-    @gun.dir = (Vec2d(mx, my) - Vec2d(@box\center!))\normalized!
-
-    @gun\update dt, world
-
-  take_hit: (thing, world) =>
-    if thing.is_enemy_bullet
-      spray_dir = thing.vel\normalized!\flip!
-      thing.life = 0
-      world.particles\add BloodSquirt spray_dir, world, thing\center!
 
 class Game
   show_fps: false
@@ -393,6 +278,7 @@ class Game
 
 
   mousepressed: (x,y) =>
+    -- @world.particles\add Explosion @world, x,y
     @world.entities\add Bullet(@player.gun.dir, @player.gun\tip!)
 
   draw: =>
@@ -405,11 +291,12 @@ class Game
       g.translate 10, 100
       p tostring(timer.getFPS!), 0,0
       p tostring("b: #{@world\block_i!}, bp: #{@world\block_progress!}"), 0,10
-      p tostring("ne: #{@world.active_e}/#{#@world.entities}, np: #{@world.active_p}/#{#@world.particles}"), 0,20
+      p tostring("ne: #{@world.active_e}-#{#@world.entities}, np: #{@world.active_p}-#{#@world.particles}"), 0,20
       p tostring("de: #{#@world.entities.dead_list}, dp: #{#@world.particles.dead_list}"), 0,30
 
   update: (dt) =>
     return if @paused
+
     @world\update dt
     @hud\update dt, @world
 
