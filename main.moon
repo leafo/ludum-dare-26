@@ -343,6 +343,8 @@ love.load = ->
 
   g.setFont font
 
+  export sfx = lovekit.audio.Audio "sounds"
+  sfx\preload { }
   dispatch = Dispatcher Game!
   dispatch\bind love
 
