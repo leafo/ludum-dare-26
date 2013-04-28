@@ -76,7 +76,7 @@ class Platform
   inner_width: 580
 
   new: =>
-    @ox, @oy = g.getWidth! / 2, g.getHeight! * (2/3)
+    @ox, @oy = g.getWidth! / 2, g.getHeight! * .54
     @elapsed = 0
 
     @hitbox = Box 0,0,450,120
@@ -284,6 +284,9 @@ class Game
       dispatch\push GameOver!
 
   on_key: (key, code) =>
+    if key == "return"
+      @world.started = true
+
     -- TODO: remove me
     if key == "f2"
       @player.life = 0

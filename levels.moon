@@ -108,6 +108,8 @@ class World
   block_size: 300
   started: false
 
+  lazy_value @, "tutorial", -> imgfy "img/tutorial.png"
+
   new: (@game, @player, level=Levels[1]) =>
     @entities = DrawList! -- things that collide
     @particles = DrawList! -- things that don't collide
@@ -117,7 +119,7 @@ class World
     @platform = Platform!
     @ground = Ground!
 
-    @particles\add EnemySpawner @
+    -- @particles\add EnemySpawner @
 
     @box = Box 0, 0, g.getWidth!, g.getHeight!
     @expanded_box = @box\pad -20
@@ -173,6 +175,9 @@ class World
       @barriers[i]\draw! if @active_block[i]
 
     g.setColor 255,255,255
+
+    unless @started
+      @tutorial\draw 0,0, 0, 2,2
 
   collides: (thing) =>
     @platform\collides thing
