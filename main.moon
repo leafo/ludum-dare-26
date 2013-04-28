@@ -7,8 +7,6 @@ require "lovekit.all"
 
 import unpack from _G
 
-local *
-
 p = (str, ...) -> g.print str\lower!, ...
 
 require "system"
@@ -16,6 +14,7 @@ require "bullets"
 require "particles"
 require "enemies"
 require "hud"
+require "levels"
 
 system = TrapSystem 0.002
 
@@ -33,56 +32,7 @@ shadow = (box, z_height=0) ->
     y + h - sh/2 + z_height,
     sw, sh
 
-class World
-  new: (@game, @player) =>
-    @entities = DrawList! -- things that collide
-    @particles = DrawList! -- things that don't collide
-
-    @collide = UniformGrid!
-
-    @platform = Platform!
-    @ground = Ground!
-
-    @particles\add EnemySpawner @
-
-    @box = Box 0, 0, g.getWidth!, g.getHeight!
-    @expanded_box = @box\pad -20
-
-  draw: =>
-    @ground\draw!
-
-    @platform\draw_body!
-    @player\draw!
-    @platform\draw_wheels!
-
-    @entities\draw!
-    @particles\draw!
-    g.setColor 255,255,255
-
-  collides: (thing) =>
-    @platform\collides thing
-
-  update: (dt) =>
-    @platform\update dt, @
-    @player\update dt, @
-    _, @active_p =@particles\update dt, @
-    _, @active_e = @entities\update dt, @
-    @ground\update dt, @
-
-    -- collision
-    @collide\clear!
-    @collide\add @player.box, @player
-    for e in *@entities
-      if e.alive != false
-        @collide\add e
-
-    for e in *@entities
-      continue unless e.is_enemy
-      for thing in *@collide\get_touching e
-        e\take_hit thing, @
-
-    for thing in *@collide\get_touching @player.box
-      @player\take_hit thing, @
+export ^
 
 class Ground
   width: 0.7 -- of screen
@@ -127,7 +77,7 @@ class Ground
 class Platform
   wall_height: 20
   width: 500
-  height: 150
+  height: 120
 
   min_oy: 197
   max_oy: 402
@@ -444,7 +394,7 @@ class Game
     if @show_fps
       g.scale 2
       p tostring(timer.getFPS!), 0,0
-      p tostring("z: #{@player.z}"), 0,10
+      p tostring("b: #{@world\block_i!}, bp: #{@world\block_progress!}"), 0,10
       p tostring("ne: #{@world.active_e}/#{#@world.entities}, np: #{@world.active_p}/#{#@world.particles}"), 0,20
       p tostring("de: #{#@world.entities.dead_list}, dp: #{#@world.particles.dead_list}"), 0,30
 

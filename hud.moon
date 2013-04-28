@@ -12,6 +12,8 @@ class Hud extends Box
   w: 200
   h: 80
 
+  progress_w: 20
+
   new: (world) =>
     @x = g.getWidth! - @margin - @w
     @y = @margin
@@ -39,6 +41,8 @@ class Hud extends Box
   update: (dt, world) =>
     @position = world.platform\position!
     @segment = world.platform\segment!
+    @progress = world\progress!
+
     @time += dt
 
   -- this is dumb
@@ -52,6 +56,17 @@ class Hud extends Box
     else
       -- 0.75 -> 1.0
       0.75 + (p - 0.66) / 0.33 * 0.25
+
+  draw_progress: =>
+    w = @progress_w
+    h = @h * @progress
+    x = @x - @margin - w
+
+    g.setColor 255,255,255, 120
+    g.rectangle "fill", x, @y + @h - h, w, h
+
+    g.setColor 200,200,200
+    g.rectangle "line", x, @y, w, @h
 
   draw: =>
     pt_size = g.getPointSize!
@@ -98,4 +113,6 @@ class Hud extends Box
     g.setColor 255,255,255
 
     g.setPointSize pt_size
+
+    @draw_progress!
 
