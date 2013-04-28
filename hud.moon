@@ -11,6 +11,7 @@ health_color = { 100, 200, 100 }
 
 export *
 
+p = (str, ...) -> g.print str\lower!, ...
 box_text = (msg, x, y, center=true, inner_color=black) ->
   msg = msg\lower!
   font = g.getFont!
@@ -230,5 +231,73 @@ class Hud extends Box
     box_text "score: 0", 0, 0, false
     g.pop!
 
+class TitleScreen
+  watch_class @
+  shroud: 0
 
+  new: =>
+    @viewport = EffectViewport scale: 3
+    @title = imgfy "img/title.png"
+    sfx\play_music "moondar_title"
+
+  on_key: (key) =>
+    return if @seq
+    if key == "return"
+      @seq = Sequence ->
+        tween @, 1.0, shroud: 255
+        @shroud = 0
+        @seq = nil
+        dispatch\push Game!
+
+  draw: =>
+    @viewport\apply!
+    g.setColor 255,255,255
+    @title\draw 0,0
+
+    if f(timer.getTime! * 2) % 2 == 0
+      box_text "Press Enter To Begin", 230, 110
+
+    g.setColor 255,255,255, 128
+    p "leafo 2013", 0, @viewport.h - 8
+
+    if @shroud > 0
+      @viewport\draw {0,0,0, @shroud}
+
+    @viewport\pop!
+
+  update: (dt) =>
+    @seq\update dt if @seq
+
+class Directions
+  watch_class @
+  shroud: 0
+
+  new: =>
+
+class GameOver
+  watch_class @
+
+  new: (player) =>
+    @viewport = EffectViewport scale: 3
+
+  on_key: (key) =>
+    if key == "return"
+      dispatch\reset Game!
+
+  update: (dt) =>
+
+  draw: =>
+    @viewport\apply!
+    g.setColor 255,255,255
+
+    p "Moondar is lost...", 10, 10
+
+    p "Game Over", 60, 40
+    p "Level Reached: #{0}", 60, 60
+    p "Score: #{0}", 60, 70
+
+    p "Press enter to return to title", 60, 100
+    p "Thanks for playing! &", 60, 110
+
+    @viewport\pop!
 

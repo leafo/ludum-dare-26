@@ -263,6 +263,7 @@ class Game
   show_fps: false
 
   new: =>
+    @updated = false
     @player = Player 0,0
     @world = World @, @player
     @hud = Hud @world
@@ -306,6 +307,8 @@ class Game
     @player\shoot @world
 
   draw: =>
+    return unless @updated
+
     @viewport\apply!
 
     @world\draw!
@@ -323,8 +326,8 @@ class Game
       p tostring("de: #{#@world.entities.dead_list}, dp: #{#@world.particles.dead_list}"), 0,30
 
   update: (dt) =>
+    @updated = true
     return if @paused
-
 
     @viewport\update dt
     @world\update dt
@@ -345,7 +348,10 @@ love.load = ->
 
   export sfx = lovekit.audio.Audio "sounds"
   sfx\preload { }
-  dispatch = Dispatcher Game!
+  -- TODO: bring music back
+  sfx.play_music = ->
+
+  export dispatch = Dispatcher TitleScreen!
   dispatch\bind love
 
   if reloader
