@@ -44,6 +44,7 @@ class World
     @particles\add EnemySpawner @
 
     @box = Box 0, 0, g.getWidth!, g.getHeight!
+    @expanded_box = @box\pad -20
 
   draw: =>
     @ground\draw!
@@ -62,8 +63,8 @@ class World
   update: (dt) =>
     @platform\update dt, @
     @player\update dt, @
-    @particles\update dt, @
-    @entities\update dt, @
+    _, @active_p =@particles\update dt, @
+    _, @active_e = @entities\update dt, @
     @ground\update dt, @
 
     -- collision
@@ -404,7 +405,7 @@ class Player extends Entity
   take_hit: (thing, world) =>
     if thing.is_enemy_bullet
       spray_dir = thing.vel\normalized!\flip!
-      thing.alive = false
+      thing.life = 0
       world.particles\add BloodSquirt spray_dir, world, thing\center!
 
 class Game
@@ -419,6 +420,25 @@ class Game
     if key == "p"
       @paused = not @paused
 
+    if key == "x"
+      print "Entities"
+      for i, e in ipairs @world.entities
+        print i, e.__class.__name, e.alive
+
+      print "> Dead List"
+      for i in *@world.entities.dead_list
+        print ">", i
+
+      print!
+      print "Particles"
+      for i, e in ipairs @world.particles
+        print i, e.__class.__name, e.alive
+
+      print "> Dead List"
+      for i in *@world.particles.dead_list
+        print ">", i
+
+
   mousepressed: (x,y) =>
     @world.entities\add Bullet(@player.gun.dir, @player.gun\tip!)
 
@@ -430,8 +450,8 @@ class Game
       g.scale 2
       p tostring(timer.getFPS!), 0,0
       p tostring("z: #{@player.z}"), 0,10
-      p tostring("cy: #{@world.platform.oy}"), 0,20
-      p tostring("pp: #{@world.platform\position!}"), 0,30
+      p tostring("ne: #{@world.active_e}/#{#@world.entities}, np: #{@world.active_p}/#{#@world.particles}"), 0,20
+      p tostring("de: #{#@world.entities.dead_list}, dp: #{#@world.particles.dead_list}"), 0,30
 
   update: (dt) =>
     return if @paused

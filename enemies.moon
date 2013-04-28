@@ -105,7 +105,7 @@ class Enemy extends Box
 
   take_hit: (thing, world) =>
     if thing.is_bullet and not thing.is_enemy_bullet
-      thing.alive = false
+      thing.life = 0
       @life -= 50
 
       spray_dir = thing.vel\normalized!

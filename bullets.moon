@@ -38,15 +38,11 @@ class Bullet extends Box
     @move unpack @vel * @speed * dt
 
     @life -= dt
-    @life > 0
+    @life > 0 and world.expanded_box\touches_box @
 
 class EnemyBullet extends Bullet
   is_enemy_bullet: true
 
   color: { 226, 102, 207 }
-
-  update: (...) =>
-    super ...
-    true
 
 nil
