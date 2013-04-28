@@ -99,17 +99,23 @@ class Enemy extends Box
   new: (@x, @y, @vel=Vec2d(0,0), @accel=Vec2d(0,0))=>
 
   shoot: (world, dir) =>
-    dir = (Vec2d(world.player.box\center!) - Vec2d(@center!))\normalized!
+    sfx\play "enemy_shoot"
 
+    dir = (Vec2d(world.player.box\center!) - Vec2d(@center!))\normalized!
     world.entities\add EnemyBullet dir, @x, @y
 
   take_hit: (thing, world) =>
     if thing.is_bullet and not thing.is_enemy_bullet
       thing.life = 0
-      @life -= 50
+      @life -= 34
 
       spray_dir = thing.vel\normalized!
       world.particles\add Sparks spray_dir, world, thing\center!
+
+      if @life > 0
+        sfx\play "enemy_hit"
+      else
+        sfx\play "enemy_die"
 
   update: (dt, world) =>
     @vel\adjust unpack @accel * dt

@@ -106,7 +106,7 @@ class World
 
   speed: 77
   block_size: 300
-  started: false
+  started: true
 
   lazy_value @, "tutorial", -> imgfy "img/tutorial.png"
 
@@ -119,7 +119,7 @@ class World
     @platform = Platform!
     @ground = Ground!
 
-    -- @particles\add EnemySpawner @
+    @particles\add EnemySpawner @
 
     @box = Box 0, 0, g.getWidth!, g.getHeight!
     @expanded_box = @box\pad -20
@@ -224,6 +224,7 @@ class World
     if @active_block[row]
       b = @barriers[row]
       if not b.has_collided and b\touches_box @platform.hitbox
+        sfx\play "barrier_collide"
         @platform\take_hit b, @
         @player\take_hit b, @
         b.has_collided = true

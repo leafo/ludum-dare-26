@@ -278,6 +278,8 @@ class Game
       tween @, 1.0, shroud: 0
       @seq = nil
 
+    sfx\play_music "moondar"
+
   goto_gameover: =>
     @seq = Sequence ->
       tween @, 1.0, shroud: 255
@@ -365,7 +367,19 @@ love.load = ->
   g.setFont font
 
   export sfx = lovekit.audio.Audio "sounds"
-  sfx\preload { }
+  sfx\preload {
+    "barrier_collide"
+    "enemy_die"
+    "enemy_hit"
+    "enemy_shoot"
+    "jump"
+    "land"
+    "player_die"
+    "player_hit"
+    "player_shoot"
+    "start_game"
+  }
+
   -- TODO: bring music back
   sfx.play_music = ->
 

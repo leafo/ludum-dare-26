@@ -243,6 +243,7 @@ class TitleScreen
   on_key: (key) =>
     return if @seq
     if key == "return"
+      sfx\play "start_game"
       @seq = Sequence ->
         tween @, 1.0, shroud: 255
         @shroud = 0

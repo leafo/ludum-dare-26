@@ -24,6 +24,7 @@ class Gun extends Box
     unpack Vec2d(@length, 0)\rotate(@dir\radians!)\adjust @entity.gx, @entity.gy
 
   shoot: (world) =>
+    sfx\play "player_shoot"
     world.entities\add PlayerBullet @dir, @tip!
 
   draw: (gx, gy, alpha=255) =>
@@ -162,11 +163,20 @@ class Player extends Entity
       if keyboard.isDown " "
         if not @jump_time or @jump_time < max_jump_time
           @jump_time or= 0
+
+          if @jump_time == 0
+            @is_jumping = true
+            sfx\play "jump"
+
           @jump_time += dt
           pp = @jump_time / max_jump_time
           @zv = sqrt(pp) * 400
       else
         if @z == 0
+          if @is_jumping
+            sfx\play "land"
+            @is_jumping = false
+
           @jump_time = nil
         else
           @jump_time = max_jump_time
@@ -197,6 +207,7 @@ class Player extends Entity
     return if @locked
 
     if thing.is_enemy_bullet
+      sfx\play "player_hit"
       @life -= 10
       spray_dir = thing.vel\normalized!\flip!
       thing.life = 0
@@ -204,11 +215,14 @@ class Player extends Entity
       world.game.viewport\shake 5
 
     if thing.is_barrier
+      sfx\play "player_hit"
       @life -= 33
 
     @life = math.max 0, @life
+    -- death
     if @life == 0 and not @locked
       @locked = true
+      sfx\play "player_die"
 
       @effects\add Sequence ->
         x,y = @box\center!
