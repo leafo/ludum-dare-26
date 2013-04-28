@@ -4,10 +4,13 @@ import watch_class from require"lovekit.reloader"
 {graphics: g, :timer, :mouse, :keyboard} = love
 {floor: f, min: _min, :cos, :sin, :abs, :sqrt} = math
 
-export *
-
 black = { 0,0,0 }
 white = { 255,255,255 }
+outline_color = { 200, 200, 200}
+health_color = { 100, 200, 100 }
+
+export *
+
 box_text = (msg, x, y, center=true, inner_color=black) ->
   msg = msg\lower!
   font = g.getFont!
@@ -92,17 +95,6 @@ class Hud extends Box
       -- 0.75 -> 1.0
       0.75 + (p - 0.66) / 0.33 * 0.25
 
-  draw_progress: =>
-    w = @progress_w
-    h = @h * @progress
-    x = @x - @margin - w
-
-    g.setColor 255,255,255, 120
-    g.rectangle "fill", x, @y + @h - h, w, h
-
-    g.setColor 200,200,200
-    g.rectangle "line", x, @y, w, @h
-
   draw: =>
     pt_size = g.getPointSize!
     g.setPointSize 4
@@ -147,7 +139,7 @@ class Hud extends Box
     g.pop!
 
     -- outline
-    g.setColor 200,200,200
+    g.setColor unpack outline_color
     g.rectangle "line", @unpack!
 
     -- next block warnings
@@ -168,6 +160,8 @@ class Hud extends Box
     g.setPointSize pt_size
 
     @draw_progress!
+    @draw_player_health!
+    @draw_score!
 
   draw_warning_rect: (row, on=false) =>
     w = 20
@@ -186,5 +180,53 @@ class Hud extends Box
       g.setColor 80,80,80
 
     g.rectangle "fill", @x + (@w - w) / 2 + ox, @y - 3, w, h
+
+  draw_progress: =>
+    w = @progress_w
+    h = @h * @progress
+    x = @x - @margin - w
+
+    g.setColor 255,255,255, 120
+    g.rectangle "fill", x, @y + @h - h, w, h
+
+    g.setColor unpack outline_color
+    g.rectangle "line", x, @y, w, @h
+
+    g.setColor 255,255,255
+    g.push!
+    g.translate @x - 90, 16
+    g.scale 2
+    box_text "goal", 0, 0, false
+    g.pop!
+
+  draw_player_health: =>
+    p = 0.5
+    padding = 4
+
+    w = 183
+    h = @progress_w
+
+    g.setColor unpack health_color
+
+    g.rectangle "fill", @margin + padding, 30 + padding, (w - padding * 2) * p, h - padding * 2
+
+    g.setColor unpack outline_color
+    g.rectangle "line", @margin, 30, w, h
+
+    g.setColor 255,255,255
+    g.push!
+    g.translate @margin, 16
+    g.scale 2
+    box_text "health", 0, 0, false
+    g.pop!
+
+  draw_score: =>
+    g.setColor 255,255,255
+    g.push!
+    g.translate 100, 16
+    g.scale 2
+    box_text "score: 0", 0, 0, false
+    g.pop!
+
 
 

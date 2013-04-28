@@ -359,7 +359,7 @@ class Player extends Entity
       world.particles\add BloodSquirt spray_dir, world, thing\center!
 
 class Game
-  show_fps: true
+  show_fps: false
 
   new: =>
     @player = Player 0,0
@@ -369,6 +369,9 @@ class Game
   on_key: (key, code) =>
     if key == "p"
       @paused = not @paused
+
+    if key == "f1"
+      @show_fps = not @show_fps
 
     if key == "x"
       print "Entities"
@@ -397,7 +400,9 @@ class Game
     @hud\draw!
 
     if @show_fps
+      g.setColor 255,255,255
       g.scale 2
+      g.translate 10, 100
       p tostring(timer.getFPS!), 0,0
       p tostring("b: #{@world\block_i!}, bp: #{@world\block_progress!}"), 0,10
       p tostring("ne: #{@world.active_e}/#{#@world.entities}, np: #{@world.active_p}/#{#@world.particles}"), 0,20
