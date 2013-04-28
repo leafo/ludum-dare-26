@@ -268,12 +268,6 @@ class TitleScreen
   update: (dt) =>
     @seq\update dt if @seq
 
-class Directions
-  watch_class @
-  shroud: 0
-
-  new: =>
-
 class GameOver
   watch_class @
 
@@ -282,7 +276,7 @@ class GameOver
 
   on_key: (key) =>
     if key == "return"
-      dispatch\reset Game!
+      dispatch\reset TitleScreen!
 
   update: (dt) =>
 
@@ -292,12 +286,15 @@ class GameOver
 
     p "Moondar is lost...", 10, 10
 
+    g.push!
+    g.translate 0, 10
     p "Game Over", 60, 40
     p "Level Reached: #{0}", 60, 60
     p "Score: #{0}", 60, 70
 
     p "Press enter to return to title", 60, 100
     p "Thanks for playing! &", 60, 110
+    g.pop!
 
     @viewport\pop!
 

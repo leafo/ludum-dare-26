@@ -106,6 +106,7 @@ class World
 
   speed: 77
   block_size: 300
+  started: false
 
   new: (@game, @player, level=Levels[1]) =>
     @entities = DrawList! -- things that collide
@@ -146,6 +147,7 @@ class World
       }
 
   block_i: =>
+    return -1 unless @started
     _min f(@progress! * @num_blocks) + 1, @num_blocks
 
   block_progress: =>
@@ -176,12 +178,13 @@ class World
     @platform\collides thing
 
   setup_block: (bid) =>
-    @active_block = @level[bid]
+    @active_block = @level[bid] or {}
     for i=1,3
       @barriers[i].has_collided = false
 
   update: (dt) =>
-    @traversed += dt * @speed
+    @traversed += dt * @speed if @started
+
     bid = @block_i!
     if bid != @_current_block
       @_current_block = bid

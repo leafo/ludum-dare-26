@@ -214,8 +214,7 @@ class Player extends Entity
         x,y = @box\center!
         world.particles\add Sparks Vec2d(0, -1), world, x,y, 1, 100
         tween @, 1.0, alpha: 0, scale: 10
-
-        print "END THE GAME"
+        world.game\goto_gameover!
 
   shoot: (world) =>
     return if @locked

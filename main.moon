@@ -261,6 +261,7 @@ class Wheel
 
 class Game
   show_fps: false
+  shroud: 0
 
   new: =>
     @updated = false
@@ -271,6 +272,16 @@ class Game
       import effects from lovekit
       .shake = (amount=20) =>
         @effects\add effects.ViewportShake 0.8, 5, amount
+
+    @shroud = 255
+    @seq = Sequence ->
+      tween @, 1.0, shroud: 0
+      @seq = nil
+
+  goto_gameover: =>
+    @seq = Sequence ->
+      tween @, 1.0, shroud: 255
+      dispatch\push GameOver!
 
   on_key: (key, code) =>
     -- TODO: remove me
@@ -316,6 +327,9 @@ class Game
 
     @viewport\pop!
 
+    if @shroud > 0
+      @viewport\draw {0,0,0, @shroud}
+
     if @show_fps
       g.setColor 255,255,255
       g.scale 2
@@ -329,6 +343,7 @@ class Game
     @updated = true
     return if @paused
 
+    @seq\update dt if @seq
     @viewport\update dt
     @world\update dt
     @hud\update dt, @world
@@ -351,7 +366,8 @@ love.load = ->
   -- TODO: bring music back
   sfx.play_music = ->
 
-  export dispatch = Dispatcher TitleScreen!
+  -- TODO: title screen
+  export dispatch = Dispatcher Game!
   dispatch\bind love
 
   if reloader
