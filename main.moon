@@ -217,6 +217,7 @@ class Platform
 
     s.draw = -> -- lol
     world.particles\add s
+    world.game.viewport\shake 20
 
 class Wheel
   segments: 6
@@ -267,6 +268,10 @@ class Game
     @player = Player 0,0
     @world = World @, @player
     @hud = Hud @world
+    @viewport = with EffectViewport scale: 1
+      import effects from lovekit
+      .shake = (amount=20) =>
+        @effects\add effects.ViewportShake 0.8, 5, amount
 
   on_key: (key, code) =>
     if key == "p"
@@ -297,8 +302,12 @@ class Game
     @player.gun\shoot @world
 
   draw: =>
+    @viewport\apply!
+
     @world\draw!
     @hud\draw!
+
+    @viewport\pop!
 
     if @show_fps
       g.setColor 255,255,255
@@ -312,6 +321,8 @@ class Game
   update: (dt) =>
     return if @paused
 
+
+    @viewport\update dt
     @world\update dt
     @hud\update dt, @world
 

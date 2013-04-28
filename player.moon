@@ -189,4 +189,5 @@ class Player extends Entity
       spray_dir = thing.vel\normalized!\flip!
       thing.life = 0
       world.particles\add BloodSquirt spray_dir, world, thing\center!
+      world.game.viewport\shake 5
 
