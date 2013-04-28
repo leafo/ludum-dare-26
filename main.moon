@@ -1,3 +1,4 @@
+-- TODO: remove all the reloader stuff
 
 require "lovekit.all"
 reloader = require "lovekit.reloader"
@@ -133,9 +134,6 @@ class Platform
     @draw_body!
     fn! if fn
     @draw_wheels!
-
-    g.setColor 255,200, 100
-    @hitbox\outline!
 
   draw_body: =>
     @transformed (elapsed) ->
@@ -274,6 +272,12 @@ class Game
         @effects\add effects.ViewportShake 0.8, 5, amount
 
   on_key: (key, code) =>
+    -- TODO: remove me
+    if key == "f2"
+      @player.life = 0
+      @player\take_hit {}, @world
+      return
+
     if key == "p"
       @paused = not @paused
 
@@ -299,7 +303,7 @@ class Game
         print ">", i
 
   mousepressed: (x,y) =>
-    @player.gun\shoot @world
+    @player\shoot @world
 
   draw: =>
     @viewport\apply!

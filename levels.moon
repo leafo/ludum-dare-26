@@ -40,6 +40,7 @@ class Barrier extends Box
 
   row_dist: 130
   has_collided: false
+  is_barrier: true
 
   new: (@row) =>
     h = g.getHeight!
@@ -216,5 +217,6 @@ class World
       b = @barriers[row]
       if not b.has_collided and b\touches_box @platform.hitbox
         @platform\take_hit b, @
+        @player\take_hit b, @
         b.has_collided = true
 

@@ -75,6 +75,7 @@ class Hud extends Box
     @position = world.platform\position!
     @segment = world.platform\row!
     @progress = world\progress!
+    @player_life = world.player\p_life!
 
     @in_danger = world.active_block[@segment]
     @next_block = world.level[world\block_i! + 1] or {}
@@ -200,7 +201,6 @@ class Hud extends Box
     g.pop!
 
   draw_player_health: =>
-    p = 0.5
     padding = 4
 
     w = 183
@@ -208,7 +208,9 @@ class Hud extends Box
 
     g.setColor unpack health_color
 
-    g.rectangle "fill", @margin + padding, 30 + padding, (w - padding * 2) * p, h - padding * 2
+    g.rectangle "fill",
+      @margin + padding, 30 + padding,
+      (w - padding * 2) * @player_life, h - padding * 2
 
     g.setColor unpack outline_color
     g.rectangle "line", @margin, 30, w, h

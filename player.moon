@@ -26,14 +26,14 @@ class Gun extends Box
   shoot: (world) =>
     world.entities\add PlayerBullet @dir, @tip!
 
-  draw: (gx, gy) =>
+  draw: (gx, gy, alpha=255) =>
     g.push!
     g.translate gx, gy
 
     g.rotate @dir\radians!
     g.translate -@ox, -@oy
 
-    g.setColor 120,120,120
+    g.setColor 120,120,120, alpha
     g.rectangle "fill", 0, 0, 20, 10
     g.pop!
 
@@ -49,6 +49,9 @@ class Player extends Entity
 
   w: 15
   h: 50
+
+  alpha: 255
+  scale: 1
 
   -- cool
   offsets: {
@@ -86,6 +89,7 @@ class Player extends Entity
     @pos = { :x, :y }
     @gun = Gun @
     @box = Box 0,0, @w, @h
+    @effects = DrawList!
 
     with @sprite
       @anim = StateAnim "stand_left", {
@@ -124,7 +128,7 @@ class Player extends Entity
     --   g.setColor 100, 200, 100
 
     -- shadow
-    g.setColor 255,255,255
+    g.setColor 255,255,255, @alpha
     g.push!
     @sprite\draw "150,107,23,10", @fx, @fy, 0, 2, 2, 11, 5
     g.pop!
@@ -133,14 +137,14 @@ class Player extends Entity
 
     g.push!
     g.translate @fx - sx, @fy - 40 - @z - sy
-    g.scale 2, 2
+    g.scale 2 * @scale, 2 * @scale
 
-    g.setColor 255,255,255
+    g.setColor 255,255,255, @alpha
     @anim\draw -32, -32
     g.pop!
 
     -- gun
-    @gun\draw @gx, @gy
+    @gun\draw @gx, @gy, @alpha
 
     -- show bounding box and feed
     if false
@@ -149,24 +153,33 @@ class Player extends Entity
       g.point @fx , @fy
 
   update: (dt, world) =>
-    dir = mover(@speed) * dt
-    cx, cy = @fit_move dir[1], dir[2], world, @pos
+    unless @locked
+      dir = mover(@speed) * dt
+      cx, cy = @fit_move dir[1], dir[2], world, @pos
+      @anim\set_state @direction_name "left", Vec2d dir[1], 0
 
-    @anim\set_state @direction_name "left", Vec2d dir[1], 0
-    @anim\update dt
-
-    max_jump_time = 0.2
-    if keyboard.isDown " "
-      if not @jump_time or @jump_time < max_jump_time
-        @jump_time or= 0
-        @jump_time += dt
-        pp = @jump_time / max_jump_time
-        @zv = sqrt(pp) * 400
-    else
-      if @z == 0
-        @jump_time = nil
+      max_jump_time = 0.2
+      if keyboard.isDown " "
+        if not @jump_time or @jump_time < max_jump_time
+          @jump_time or= 0
+          @jump_time += dt
+          pp = @jump_time / max_jump_time
+          @zv = sqrt(pp) * 400
       else
-        @jump_time = max_jump_time
+        if @z == 0
+          @jump_time = nil
+        else
+          @jump_time = max_jump_time
+
+      if @in_control_zone and cy
+        world.platform\move dir[2]
+
+      mx, my = mouse.getPosition!
+      @gun.dir = (Vec2d(mx, my) - Vec2d(@gx, @gy))\normalized!
+
+
+    @anim\update dt
+    @effects\update dt
 
     @zv += dt * @za
     @z += @zv * dt
@@ -174,20 +187,38 @@ class Player extends Entity
       @zv = 0
       @z = 0
 
-    if @in_control_zone and cy
-      world.platform\move dir[2]
-
     @update_box world
-
-    mx, my = mouse.getPosition!
-    @gun.dir = (Vec2d(mx, my) - Vec2d(@gx, @gy))\normalized!
-
     @gun\update dt, world
 
+  p_life: =>
+    @life / @@life
+
   take_hit: (thing, world) =>
+    return if @locked
+
     if thing.is_enemy_bullet
+      @life -= 10
       spray_dir = thing.vel\normalized!\flip!
       thing.life = 0
       world.particles\add BloodSquirt spray_dir, world, thing\center!
       world.game.viewport\shake 5
+
+    if thing.is_barrier
+      @life -= 33
+
+    @life = math.max 0, @life
+    if @life == 0 and not @locked
+      @locked = true
+
+      @effects\add Sequence ->
+        x,y = @box\center!
+        world.particles\add Sparks Vec2d(0, -1), world, x,y, 1, 100
+        tween @, 1.0, alpha: 0, scale: 10
+
+        print "END THE GAME"
+
+  shoot: (world) =>
+    return if @locked
+    @gun\shoot world
+
 
