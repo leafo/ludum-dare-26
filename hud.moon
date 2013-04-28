@@ -41,6 +41,18 @@ class Hud extends Box
     @segment = world.platform\segment!
     @time += dt
 
+  -- this is dumb
+  position_to_indicator: (p) =>
+    if p <= .33
+      -- 0 -> 0.25
+      (p / .33) * 0.25
+    elseif p <= 0.66
+      -- 0.25 -> .75
+      0.25 + (p - 0.33) / 0.33 * 0.5
+    else
+      -- 0.75 -> 1.0
+      0.75 + (p - 0.66) / 0.33 * 0.25
+
   draw: =>
     pt_size = g.getPointSize!
     g.setPointSize 4
@@ -67,10 +79,10 @@ class Hud extends Box
     g.setScissor!
 
     g.push!
-    g.translate @x, @y + @h + @margin
+    g.translate @x, @y + @h + @margin * 1.2
     g.scale @w, @h
 
-    g.translate @position, 0
+    g.translate @position_to_indicator(@position), 0
 
     g.scale 0.1, 0.1
     g.triangle "fill",
@@ -81,7 +93,7 @@ class Hud extends Box
     g.pop!
 
 
-    g.setColor 255,200,200
+    g.setColor 200,200,200
     g.rectangle "line", @unpack!
     g.setColor 255,255,255
 
