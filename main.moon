@@ -408,9 +408,18 @@ class Game
     @world\update dt
     @hud\update dt, @world
 
+load_font = (img, chars)->
+  font_image = imgfy img
+  g.newImageFont font_image.tex, chars
+
 love.load = ->
   g.setBackgroundColor 10, 6, 9
   g.setPointSize 12
+
+  font = load_font "img/font.png",
+    [[ abcdefghijklmnopqrstuvwxyz-1234567890!.,:;'"?$&]]
+
+  g.setFont font
 
   dispatch = Dispatcher Game!
   dispatch\bind love

@@ -1,10 +1,35 @@
 
+import watch_class from require"lovekit.reloader"
+
 {graphics: g, :timer, :mouse, :keyboard} = love
 {floor: f, min: _min, :cos, :sin, :abs, :sqrt} = math
 
 export *
 
+black = { 0,0,0 }
+white = { 255,255,255 }
+box_text = (msg, x, y, center=true, inner_color=black) ->
+  msg = msg\lower!
+  font = g.getFont!
+
+  w, h = font\getWidth(msg), font\getHeight!
+  g.push!
+
+  if center
+    center = 0.5 if center == true
+    g.translate x - w*center, y - h/2
+  else
+    g.translate x, y - h/2
+
+  g.rectangle "fill", 0,0, w,h
+  g.setColor unpack inner_color
+  g.print msg, 0,0
+  g.pop!
+
+
 class Hud extends Box
+  watch_class @
+
   system: TrapSystem 0.008
   speed: 130
 
@@ -30,6 +55,11 @@ class Hud extends Box
       .h = @h * 2
       .h2 = .h/2
 
+    @blinker = Sequence ->
+      @_blink_on = not @_blink_on
+      wait 0.5
+      again!
+
     do
       import w2, h2, stepx, h from @sizing
       @quads = {
@@ -42,6 +72,11 @@ class Hud extends Box
     @position = world.platform\position!
     @segment = world.platform\row!
     @progress = world\progress!
+
+    @in_danger = world.active_block[@segment]
+    @next_block = world.level[world\block_i! + 1] or {}
+
+    @blinker\update dt
 
     @time += dt
 
@@ -82,7 +117,11 @@ class Hud extends Box
 
     q = @quads[@segment]
     q.a = ((math.sin(time*8) + 1) / 4 + 0.5) * 255
-    q\draw 80,80,80
+
+    if @in_danger
+      q\draw 200,80,80
+    else
+      q\draw 80,80,80
 
     g.setColor 255,255,255
 
@@ -93,6 +132,7 @@ class Hud extends Box
     g.pop!
     g.setScissor!
 
+    -- indicator
     g.push!
     g.translate @x, @y + @h + @margin * 1.2
     g.scale @w, @h
@@ -104,15 +144,47 @@ class Hud extends Box
       0, -1,
       0.5, 0.5,
       -0.5,0.5
-
     g.pop!
 
-
+    -- outline
     g.setColor 200,200,200
     g.rectangle "line", @unpack!
-    g.setColor 255,255,255
 
+    -- next block warnings
+    @draw_warning_rect 1, @next_block[1]
+    @draw_warning_rect 2, @next_block[2]
+    @draw_warning_rect 3, @next_block[3]
+
+    -- danger text
+    if @in_danger and @_blink_on
+      g.setColor 255,100,100
+      g.push!
+      g.translate g.getWidth!/2, 40
+      g.scale 4, 4
+      box_text "warning", 0,0, true, white
+      g.pop!
+
+    g.setColor 255,255,255
     g.setPointSize pt_size
 
     @draw_progress!
+
+  draw_warning_rect: (row, on=false) =>
+    w = 20
+    h = 10
+
+    ox = if row == 1
+      -40
+    elseif row == 3
+      40
+    else
+      0
+
+    if on and @_blink_on
+      g.setColor 255,100,100
+    else
+      g.setColor 80,80,80
+
+    g.rectangle "fill", @x + (@w - w) / 2 + ox, @y - 3, w, h
+
 
