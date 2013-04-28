@@ -5,6 +5,8 @@ require "lovekit.all"
 {graphics: g, :timer, :mouse, :keyboard} = love
 {floor: f, min: _min, :cos, :sin, :abs, :sqrt} = math
 
+import unpack from _G
+
 local *
 
 p = (str, ...) -> g.print str\lower!, ...
@@ -144,6 +146,16 @@ class Platform
     @wheels = {
       Wheel 50, 5, -10
       Wheel 50, -5, -10
+
+      with Wheel 40, 5, -10
+        .front_color = { 120,120,120 }
+        .back_color = { 50,50,50 }
+        .line_color = { 80, 80, 80 }
+
+      with Wheel 40, -5, -10
+        .front_color = { 120,120,120 }
+        .back_color = { 50,50,50 }
+        .line_color = { 80, 80, 80 }
     }
 
   recalc: =>
@@ -177,22 +189,41 @@ class Platform
     g.pop!
 
   draw_body: =>
-    @transformed ->
+    @transformed (elapsed) ->
       g.setColor 200,200,200
+      { :floor, :inner_floor, :wall_height } = @
 
-      -- top wall
-      g.rectangle "fill", @floor[1], @floor[2] - @wall_height,
-        @floor[3] - @floor[1], @wall_height
+      -- back wheels
+      wheel_inset = 60
 
-      @inner_floor\draw 106, 109, 111
-      @floor\draw 141, 142, 143, 83, 85, 86
+      -- wheel 1
+      wx, wy = system\project @box.x + wheel_inset, @box.y
+      @wheels[3]\draw wx, wy - 10 + bump(elapsed*2) * 10
+
+      -- wheel 2
+      wx, wy = system\project @box.x + @box.w - wheel_inset, @box.y
+      @wheels[4]\draw wx, wy - 10 + bump(elapsed*2 + 0.8) * 10
+
 
       -- bottom wall
       g.setColor 60,60,60
-      g.rectangle "fill", @floor[7], @floor[8],
-        @floor[5] - @floor[7], @wall_height
+      g.rectangle "fill", floor[7], floor[8],
+        floor[5] - floor[7], wall_height
+
+      g.rectangle "fill", inner_floor[7], inner_floor[8],
+        inner_floor[5] - inner_floor[7], wall_height
+
+      g.setColor 200,200,200
+
+      -- top wall
+      g.rectangle "fill", floor[1], floor[2] - wall_height,
+        floor[3] - floor[1], wall_height
+
+      inner_floor\draw 106, 109, 111
+      floor\draw 141, 142, 143, 83, 85, 86
 
       g.setColor 255,255,255
+
 
   draw_wheels: =>
     @transformed (elapsed) ->
@@ -204,45 +235,6 @@ class Platform
       -- wheel 2
       wx, wy = system\project @box.x + @box.w, @box.y + @box.h
       @wheels[2]\draw wx - wheel_inset, wy + 30 + bump(elapsed*2 + 0.8) * 10
-
-
-  draw: =>
-    { :elapsed } = @
-
-    g.push!
-    g.translate @ox, @oy
-
-    g.rotate sin(elapsed * 10) * 0.02
-
-    g.translate cos(elapsed * 6) * 5,
-      cos(elapsed * 12) * 3
-
-    g.setColor 200,200,200
-
-    -- top wall
-    g.rectangle "fill", @floor[1], @floor[2] - @wall_height,
-      @floor[3] - @floor[1], @wall_height
-
-    @inner_floor\draw 106, 109, 111
-    @floor\draw 141, 142, 143, 83, 85, 86
-
-    -- bottom wall
-    g.setColor 60,60,60
-    g.rectangle "fill", @floor[7], @floor[8],
-      @floor[5] - @floor[7], @wall_height
-
-    g.setColor 255,255,255
-
-    wheel_inset = 60
-    -- wheel 1
-    wx, wy = system\project @box.x, @box.y + @box.h
-    @wheels[1]\draw wx + wheel_inset, wy + 30 + bump(elapsed*2) * 10
-
-    -- wheel 2
-    wx, wy = system\project @box.x + @box.w, @box.y + @box.h
-    @wheels[2]\draw wx - wheel_inset, wy + 30 + bump(elapsed*2 + 0.8) * 10
-
-    g.pop!
 
   move: (dy) =>
     @oy += dy / 5
@@ -270,6 +262,10 @@ class Wheel
   speed: 6
   num_lines: 15
 
+  back_color: { 100,100,100 }
+  front_color: { 190,190,190 }
+  line_color: { 180, 180, 180 }
+
   new: (@radius, @ox, @oy)=>
     @elapsed = 0
 
@@ -278,7 +274,7 @@ class Wheel
 
   draw: (cx, cy) =>
     -- back
-    g.setColor 80,80,80
+    g.setColor unpack @back_color
     g.push!
     g.translate cx + @ox, cy + @oy
     g.rotate @elapsed
@@ -286,7 +282,7 @@ class Wheel
     g.pop!
 
     -- lines
-    g.setColor 180,180,180
+    g.setColor unpack @line_color
 
     line_dir = Vec2d(@radius, 0)\rotate @elapsed
     for rad= 0, 2*math.pi, 2*math.pi / @num_lines
@@ -295,13 +291,12 @@ class Wheel
       g.line lx, ly, lx + @ox, ly + @oy
 
     -- front
-    g.setColor 200,200,200
+    g.setColor unpack @front_color
     g.push!
     g.translate cx, cy
     g.rotate @elapsed
     g.circle "fill", 0,0, @radius, @segments
     g.pop!
-
 
 class Gun extends Box
   ox: 2
