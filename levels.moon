@@ -8,9 +8,16 @@ export ^
 
 Levels = {
   {
-    "....X.........X.....X........"
-    ".........................X..."
-    ".........X.....X......X......"
+    ".xx.x.........x.....x........"
+    "x....x..................x..."
+    "...x.....x.....x......x......"
+    "............................."
+  }
+
+  {
+    "....x.........x.....x........"
+    ".........................x..."
+    ".........x.....x......x......"
     "............................."
   }
 }
@@ -90,7 +97,7 @@ class World
   speed: 77
   block_size: 300
 
-  new: (@game, @player, @level=Levels[1]) =>
+  new: (@game, @player, level=Levels[1]) =>
     @entities = DrawList! -- things that collide
     @particles = DrawList! -- things that don't collide
 
@@ -104,7 +111,9 @@ class World
     @box = Box 0, 0, g.getWidth!, g.getHeight!
     @expanded_box = @box\pad -20
 
-    @num_blocks = #@level[1]
+    @level = @parse_level level
+
+    @num_blocks = #@level
     @traversed = 0
     @length = @num_blocks * @block_size
 
@@ -114,8 +123,20 @@ class World
       Barrier 3
     }
 
+    @active_block = { }
+
+  parse_level: (level) =>
+    {row1, row2, row3, enemies} = level
+    return for i = 1, #row1
+      {
+        row1\sub(i,i) != "."
+        row2\sub(i,i) != "."
+        row3\sub(i,i) != "."
+        enemy: if enemies\sub(i,i) != "." then EnemySpawner
+      }
+
   block_i: =>
-    f @progress! * @num_blocks
+    _min f(@progress! * @num_blocks) + 1, @num_blocks
 
   block_progress: =>
     @traversed % @block_size / @block_size
@@ -128,14 +149,13 @@ class World
 
     player_row = @platform\row!
     for i = 1,3
-      @barriers[i]\draw_shadow! unless player_row == i
+      @barriers[i]\draw_shadow! if @active_block[i]
 
     for i = 1,3
       if player_row == i
         @platform\draw -> @player\draw!
-      else
-        @barriers[i]\draw!
 
+      @barriers[i]\draw! if @active_block[i]
 
     @entities\draw!
     @particles\draw!
@@ -144,8 +164,15 @@ class World
   collides: (thing) =>
     @platform\collides thing
 
+  setup_block: (bid) =>
+    @active_block = @level[bid]
+
   update: (dt) =>
     @traversed += dt * @speed
+    bid = @block_i!
+    if bid != @_current_block
+      @_current_block = bid
+      @setup_block bid
 
     for b in *@barriers
       b\update dt, @
