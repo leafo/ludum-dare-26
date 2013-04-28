@@ -159,13 +159,14 @@ class World
       @barriers[i]\draw_shadow! if @active_block[i]
 
     for i = 1,3
+
       if player_row == i
         @platform\draw -> @player\draw!
+        @particles\draw!
+        @entities\draw!
 
       @barriers[i]\draw! if @active_block[i]
 
-    @entities\draw!
-    @particles\draw!
     g.setColor 255,255,255
 
   collides: (thing) =>
