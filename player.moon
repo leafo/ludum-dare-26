@@ -23,12 +23,17 @@ class Gun extends Box
   tip: =>
     unpack Vec2d(@length, 0)\rotate(@dir\radians!)\adjust @entity.gx, @entity.gy
 
+  shoot: (world) =>
+    world.entities\add PlayerBullet @dir, @tip!
+
   draw: (gx, gy) =>
     g.push!
     g.translate gx, gy
 
     g.rotate @dir\radians!
     g.translate -@ox, -@oy
+
+    g.setColor 120,120,120
     g.rectangle "fill", 0, 0, 20, 10
     g.pop!
 
@@ -133,9 +138,7 @@ class Player extends Entity
     g.pop!
 
     -- gun
-    g.setColor 255,100,100
     @gun\draw @gx, @gy
-    g.setColor 255,255,255
 
     -- show bounding box and feed
     if false

@@ -5,6 +5,8 @@
 export *
 
 class Bullet extends Box
+  lazy_value @, "sprite", -> Player.sprite
+
   size: 8
   speed: 500
   is_bullet: true
@@ -16,7 +18,7 @@ class Bullet extends Box
 
     super f(x - half), f(y - half), @size, @size
 
-    @rads = @vel\normalized!\radians!
+    @rads = @vel\normalized!\radians! + math.pi / 2
     @life = 3
 
   draw: =>
@@ -30,7 +32,7 @@ class Bullet extends Box
 
     g.scale 3, 3
     g.rotate @rads
-    g.rectangle "fill", -5, -1, 5, 2
+    g.rectangle "fill", -1, -1, 2, 6
     g.pop!
     g.setColor 255, 255, 255
 
@@ -40,9 +42,27 @@ class Bullet extends Box
     @life -= dt
     @life > 0 and world.expanded_box\touches_box @
 
+class PlayerBullet extends Bullet
+
+  draw: =>
+    x,y = @center!
+    g.setColor 255,255,255
+    @sprite\draw "214,70,19,26", x, y, @rads, 2,2, 9, 8
+
+    -- g.setColor 255,0,0
+    -- g.rectangle "line", @unpack!
+
 class EnemyBullet extends Bullet
+  elapsed: 0
   is_enemy_bullet: true
 
-  color: { 226, 102, 207 }
+  update: (dt, ...) =>
+    @elapsed += dt
+    super dt, ...
+
+  draw: =>
+    x,y = @center!
+    g.setColor 255,255,255
+    @sprite\draw "251,68,17,18", x, y, @elapsed*10, 3,3, 9, 10
 
 nil

@@ -276,10 +276,8 @@ class Game
       for i in *@world.particles.dead_list
         print ">", i
 
-
   mousepressed: (x,y) =>
-    -- @world.particles\add Explosion @world, x,y
-    @world.entities\add Bullet(@player.gun.dir, @player.gun\tip!)
+    @player.gun\shoot @world
 
   draw: =>
     @world\draw!
