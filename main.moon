@@ -138,6 +138,11 @@ class Platform
 
     g.pop!
 
+  draw: (fn) =>
+    @draw_body!
+    fn! if fn
+    @draw_wheels!
+
   draw_body: =>
     @transformed (elapsed) ->
       g.setColor 200,200,200
@@ -198,7 +203,7 @@ class Platform
   position: =>
     (@oy - @min_oy) / (@max_oy - @min_oy)
 
-  segment: =>
+  row: =>
     f(_min(@position! * 3, 2)) + 1
 
   update: (dt, world) =>

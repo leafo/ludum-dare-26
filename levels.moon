@@ -11,6 +11,7 @@ Levels = {
     "....X.........X.....X........"
     ".........................X..."
     ".........X.....X......X......"
+    "............................."
   }
 }
 
@@ -18,14 +19,19 @@ Levels = {
 -- 2
 -- 3
 class Barrier
+  watch_class @
+
   w: 300
   h: 150
 
   row_dist: 130
 
   new: (@row) =>
+    @position!
+
+  position: =>
     h = g.getHeight!
-    @y = h * ((Ground.width * 0.4) + (1 - Ground.width))
+    @y = h * ((Ground.width * 0.6) + (1 - Ground.width))
 
     if @row == 1
       @y -= @row_dist
@@ -35,21 +41,28 @@ class Barrier
       @y += @row_dist
       @h = @@h + 50
 
-  draw: =>
-    x = @x - @w / 2
-    y = @y - @h
+  draw_origin: =>
+    @x - @w / 2, @y - @h
 
-    ox = (@progress - 0.5) * 2 * 30
-    oy = -10
-
+  draw_shadow: =>
     g.push!
+    g.translate @draw_origin!
 
-    g.translate x, y
     sw = 40
     sh = 30
 
     g.setColor 0,0,0, 140
     g.rectangle "fill", -sw, @h - sh/2, @w + sw*2, sh
+
+    g.pop!
+
+  draw: =>
+    ox = (@progress - 0.5) * 2 * 30
+    oy = -10
+
+    g.push!
+
+    g.translate @draw_origin!
 
     g.setColor 50,50,50
     g.rectangle "fill", ox, oy, @w, @h
@@ -74,7 +87,7 @@ class Barrier
 class World
   watch_class @
 
-  speed: 64
+  speed: 77
   block_size: 300
 
   new: (@game, @player, @level=Levels[1]) =>
@@ -113,12 +126,16 @@ class World
   draw: =>
     @ground\draw!
 
-    @platform\draw_body!
-    @player\draw!
-    @platform\draw_wheels!
+    player_row = @platform\row!
+    for i = 1,3
+      @barriers[i]\draw_shadow! unless player_row == i
 
-    for b in *@barriers
-      b\draw!
+    for i = 1,3
+      if player_row == i
+        @platform\draw -> @player\draw!
+      else
+        @barriers[i]\draw!
+
 
     @entities\draw!
     @particles\draw!
@@ -135,7 +152,7 @@ class World
 
     @platform\update dt, @
     @player\update dt, @
-    _, @active_p =@particles\update dt, @
+    _, @active_p = @particles\update dt, @
     _, @active_e = @entities\update dt, @
     @ground\update dt, @
 

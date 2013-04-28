@@ -40,7 +40,7 @@ class Hud extends Box
 
   update: (dt, world) =>
     @position = world.platform\position!
-    @segment = world.platform\segment!
+    @segment = world.platform\row!
     @progress = world\progress!
 
     @time += dt
