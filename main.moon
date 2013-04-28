@@ -78,6 +78,8 @@ class Platform
     @ox, @oy = g.getWidth! / 2, g.getHeight! * (2/3)
     @elapsed = 0
 
+    @hitbox = Box 0,0,450,120
+
     @box = Box -@width/2, -@height/2, @width, @height
     @inner_box = Box -@inner_width/2, -@inner_height/2, @inner_width, @inner_height
     @recalc!
@@ -131,6 +133,9 @@ class Platform
     @draw_body!
     fn! if fn
     @draw_wheels!
+
+    g.setColor 255,200, 100
+    @hitbox\outline!
 
   draw_body: =>
     @transformed (elapsed) ->
@@ -198,8 +203,20 @@ class Platform
   update: (dt, world) =>
     @elapsed += dt
 
+    @hitbox\move_center @ox, @oy
+
     for w in *@wheels
       w\update dt
+
+  take_hit: (barrier, world) =>
+    s = Sequence ->
+      with world.particles
+        for i = 1,8
+          \add Explosion world, @hitbox\random_point!
+          wait rand 0.05, 0.1
+
+    s.draw = -> -- lol
+    world.particles\add s
 
 class Wheel
   segments: 6

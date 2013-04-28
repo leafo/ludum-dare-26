@@ -45,6 +45,8 @@ class Player extends Entity
 
   mover = make_mover "w", "s", "a", "d"
 
+  life: 100
+
   w: 15
   h: 50
 

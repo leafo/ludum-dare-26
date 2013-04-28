@@ -32,18 +32,16 @@ Levels = {
 -- 1
 -- 2
 -- 3
-class Barrier
+class Barrier extends Box
   watch_class @
 
   w: 300
   h: 150
 
   row_dist: 130
+  has_collided: false
 
   new: (@row) =>
-    @position!
-
-  position: =>
     h = g.getHeight!
     @y = h * ((Ground.width * 0.6) + (1 - Ground.width))
 
@@ -55,12 +53,11 @@ class Barrier
       @y += @row_dist
       @h = @@h + 50
 
-  draw_origin: =>
-    @x - @w / 2, @y - @h
+    @y -= @h
 
   draw_shadow: =>
     g.push!
-    g.translate @draw_origin!
+    g.translate @x, @y
 
     sw = 40
     sh = 30
@@ -76,7 +73,7 @@ class Barrier
 
     g.push!
 
-    g.translate @draw_origin!
+    g.translate @x, @y
 
     g.setColor 50,50,50
     g.rectangle "fill", ox, oy, @w, @h
@@ -85,6 +82,9 @@ class Barrier
     g.rectangle "fill", 0, 0, @w, @h
 
     g.pop!
+
+    g.setColor 255,255,255, 128
+    @outline!
 
   update: (dt, world) =>
     b = world.box
@@ -96,7 +96,9 @@ class Barrier
     left = cx - hw * grow
     right = cx + hw * grow
     @progress = world\block_progress!
-    @x = (1 - @progress) * (right - left) + left
+
+    x = (1 - @progress) * (right - left) + left
+    @x = x - @w / 2
 
 class World
   watch_class @
@@ -174,6 +176,8 @@ class World
 
   setup_block: (bid) =>
     @active_block = @level[bid]
+    for i=1,3
+      @barriers[i].has_collided = false
 
   update: (dt) =>
     @traversed += dt * @speed
@@ -206,4 +210,11 @@ class World
     for thing in *@collide\get_touching @player.box
       @player\take_hit thing, @
 
+    -- barriers colliding
+    row = @platform\row!
+    if @active_block[row]
+      b = @barriers[row]
+      if not b.has_collided and b\touches_box @platform.hitbox
+        @platform\take_hit b, @
+        b.has_collided = true
 
