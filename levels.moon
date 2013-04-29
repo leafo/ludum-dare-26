@@ -11,7 +11,7 @@ Levels = {
     "...xxxxxxxxxxxxxxxxxxxxxxxxxx"
     "............................."
     "...xxxxxxxxxxxxxxxxxxxxxxxxxx"
-    ".a..........................."
+    "aa..........................."
   }
 
   {
@@ -29,9 +29,7 @@ Levels = {
   }
 }
 
--- 1
--- 2
--- 3
+
 class Barrier extends Box
   watch_class @
 

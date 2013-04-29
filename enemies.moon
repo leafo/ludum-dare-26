@@ -100,6 +100,8 @@ class Enemy extends Box
 
   color: { 209, 100, 121 }
 
+  lazy_value @, "sprite", -> Player.sprite
+
   new: (@x, @y, @vel=Vec2d(0,0), @accel=Vec2d(0,0))=>
 
   shoot: (world, dir) =>
@@ -116,6 +118,12 @@ class Enemy extends Box
       spray_dir = thing.vel\normalized!
       world.particles\add Sparks spray_dir, world, thing\center!
 
+      @seq = Sequence ->
+        @shake_time = 1
+        @rand = math.random!
+        tween @, 0.5, shake_time: 0
+        @shake_time = nil
+
       if @life > 0
         sfx\play "enemy_hit"
       else
@@ -123,12 +131,29 @@ class Enemy extends Box
 
   update: (dt, world) =>
     @vel\adjust unpack @accel * dt
+    @seq\update dt if @seq
     @move unpack @vel * dt
 
     @life > 0
 
   draw: =>
-    super @color
+    g.setColor 255,255,255
+
+    if t = @shake_time
+      g.push!
+      g.translate 5 * t * math.sin(t*10 + @rand),
+        5 * t * math.cos(t*11 + @rand)
+
+      o = (1 - t) * 255
+      g.setColor 255, o, o
+    else
+      g.setColor 255, 255, 255
+
+    cx, cy = @center!
+    @sprite\draw "273,19,30,25", cx, cy, 0, 2, 2, 15,12
+
+    if @shake_time
+      g.pop!
 
 Sequence.default_scope.bezier_move_to = (thing, tx, ty, speed) ->
   speed or= thing.speed

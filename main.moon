@@ -261,7 +261,8 @@ class Wheel
 
 class Game
   show_fps: false
-  shroud: 0
+  shroud: 1
+  current_level: 1
 
   new: =>
     @updated = false
