@@ -79,8 +79,11 @@ class Hud extends Box
     @player_life = world.player\p_life!
     @player_score = world.player.display_score
 
-    @in_danger = world.active_block[@segment]
+    @current_block = world.active_block
     @next_block = world.level[world\block_i! + 1] or {}
+
+    @block_progress = world\block_progress!
+    @in_danger = @current_block[@segment] and @block_progress < 0.6
 
     @blinker\update dt
 
@@ -155,9 +158,9 @@ class Hud extends Box
     g.rectangle "line", @unpack!
 
     -- next block warnings
-    @draw_warning_rect 1, @next_block[1]
-    @draw_warning_rect 2, @next_block[2]
-    @draw_warning_rect 3, @next_block[3]
+    @draw_warning_rect 1
+    @draw_warning_rect 2
+    @draw_warning_rect 3
 
     if @stage_timeout and @stage_timeout > 0 and @_blink_on
       g.setColor unpack white
@@ -187,6 +190,12 @@ class Hud extends Box
     w = 20
     h = 10
 
+    blink = true
+    on = @next_block[row]
+    if @current_block[row] and @block_progress < 0.6
+      on = true
+      blink = false
+
     ox = if row == 1
       -40
     elseif row == 3
@@ -194,7 +203,7 @@ class Hud extends Box
     else
       0
 
-    if on and @_blink_on
+    if on and (not blink or @_blink_on)
       g.setColor 255,100,100
     else
       g.setColor 80,80,80
