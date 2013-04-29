@@ -1,7 +1,6 @@
--- TODO: remove all the reloader stuff
 
 require "lovekit.all"
-reloader = require "lovekit.reloader"
+-- reloader = require "lovekit.reloader"
 
 {graphics: g, :timer, :mouse, :keyboard} = love
 {floor: f, min: _min, :cos, :sin, :abs, :sqrt} = math
@@ -288,41 +287,14 @@ class Game
       dispatch\push GameOver @
 
   on_key: (key, code) =>
-    if key == "f3"
-      @world\goto_next_level!
-
     if key == "return"
       @world\start!
-
-    -- TODO: remove me
-    if key == "f2"
-      @player.life = 0
-      @player\take_hit {}, @world
-      return
 
     if key == "p"
       @paused = not @paused
 
     if key == "f1"
       @show_fps = not @show_fps
-
-    if key == "x"
-      print "Entities"
-      for i, e in ipairs @world.entities
-        print i, e.__class.__name, e.alive
-
-      print "> Dead List"
-      for i in *@world.entities.dead_list
-        print ">", i
-
-      print!
-      print "Particles"
-      for i, e in ipairs @world.particles
-        print i, e.__class.__name, e.alive
-
-      print "> Dead List"
-      for i in *@world.particles.dead_list
-        print ">", i
 
   mousepressed: (x,y) =>
     @player\shoot @world
@@ -386,11 +358,7 @@ love.load = ->
     "start_game"
   }
 
-  -- TODO: bring music back
-  sfx.play_music = ->
-
-  -- TODO: title screen
-  export dispatch = Dispatcher Game!
+  export dispatch = Dispatcher TitleScreen!
   dispatch\bind love
 
   if reloader

@@ -1,5 +1,5 @@
 
-import watch_class from require"lovekit.reloader"
+-- import watch_class from require"lovekit.reloader"
 
 {graphics: g, :timer, :mouse, :keyboard} = love
 {floor: f, min: _min, :cos, :sin, :abs, :sqrt} = math
@@ -32,7 +32,7 @@ box_text = (msg, x, y, center=true, inner_color=black) ->
 
 
 class Hud extends Box
-  watch_class @
+  -- watch_class @
 
   system: TrapSystem 0.008
   speed: 130
@@ -250,7 +250,7 @@ class Hud extends Box
     g.pop!
 
 class TitleScreen
-  watch_class @
+  -- watch_class @
   shroud: 0
 
   new: =>
@@ -288,7 +288,7 @@ class TitleScreen
     @seq\update dt if @seq
 
 class GameOver
-  watch_class @
+  -- watch_class @
 
   new: (@game) =>
     @viewport = EffectViewport scale: 3

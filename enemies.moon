@@ -243,4 +243,6 @@ class PathEnemy extends Enemy
     @damage_seq\update dt if @damage_seq
     @seq\update(dt) and @life > 0
 
+
+
 nil

@@ -1,5 +1,5 @@
 
-import watch_class from require"lovekit.reloader"
+-- import watch_class from require"lovekit.reloader"
 
 {graphics: g, :timer, :mouse, :keyboard} = love
 {floor: f, min: _min, :cos, :sin, :abs, :sqrt} = math
@@ -45,7 +45,7 @@ Levels = {
 
 
 class Barrier extends Box
-  watch_class @
+  -- watch_class @
 
   w: 300
   h: 150
@@ -114,7 +114,7 @@ class Barrier extends Box
     @x = x - @w / 2
 
 class World
-  watch_class @
+  -- watch_class @
 
   speed: 77
   block_size: 300

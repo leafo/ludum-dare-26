@@ -1,5 +1,5 @@
 
-import watch_class from require "lovekit.reloader"
+-- import watch_class from require "lovekit.reloader"
 
 {graphics: g, :timer, :mouse, :keyboard} = love
 {floor: f, min: _min, :cos, :sin, :abs, :sqrt} = math
@@ -10,7 +10,7 @@ system = TrapSystem 0.002
 export ^
 
 class Gun extends Box
-  watch_class @
+  -- watch_class @
 
   ox: 2
   oy: 5
@@ -41,7 +41,7 @@ class Gun extends Box
   update: (dt) =>
 
 class Player extends Entity
-  watch_class @
+  -- watch_class @
   lazy_value @, "sprite", -> Spriter "img/player.png", 64, 64
 
   mover = make_mover "w", "s", "a", "d"
