@@ -13,6 +13,12 @@ Levels = {
     "."
     "."
   }
+  {
+    "xxxxxxx"
+    ".xxxxxx"
+    ".xxxxxx"
+    ".xxxxxx"
+  }
 
   {
     ".xx.x.........x.....x........"
