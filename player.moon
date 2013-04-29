@@ -237,6 +237,10 @@ class Player extends Entity
 
   shoot: (world) =>
     return if @locked
+    if @in_control_zone
+      sfx\play "blocked"
+      return
+
     @gun\shoot world
 
 

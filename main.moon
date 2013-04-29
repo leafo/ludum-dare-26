@@ -184,7 +184,7 @@ class Platform
       @wheels[2]\draw wx - wheel_inset, wy + 30 + bump(elapsed*2 + 0.8) * 10
 
   move: (dy) =>
-    @oy += dy / 5
+    @oy += dy / 4
 
     if @oy > @max_oy
       @oy = @max_oy
@@ -374,6 +374,7 @@ love.load = ->
   export sfx = lovekit.audio.Audio "sounds"
   sfx\preload {
     "barrier_collide"
+    "blocked"
     "enemy_die"
     "enemy_hit"
     "enemy_shoot"
