@@ -8,30 +8,38 @@ export ^
 
 Levels = {
   {
-    "."
-    "."
-    "."
-    "."
-  }
-  {
-    "xxxxxxx"
-    ".xxxxxx"
-    ".xxxxxx"
-    ".xxxxxx"
+    "x.x.x.x."
+    ".x.x.x.x"
+    "x.x.x.x."
+    "........"
   }
 
   {
-    ".xx.x.........x.....x........"
-    "x....x..................x...."
-    "...x.....x.....x......x......"
-    "............................."
+    "....x..x....."
+    "..x.......x.."
+    "....x..x....."
+    "a..a.ba.a.ab."
   }
 
   {
-    "....x.........x.....x........"
-    ".........................x..."
-    ".........x.....x......x......"
-    "............................."
+    "..x.xx.xxx..."
+    "..x...x..x.x."
+    "....x..x...xx"
+    "..b.b.a.a.bb."
+  }
+
+  {
+    "x.x.x.x."
+    ".x.x.x.x"
+    "x.x.x.x."
+    "...a.a.."
+  }
+
+  {
+    "x.x.xx.xxx..."
+    ".xx...x..x.x."
+    "x...x..x..xxx"
+    ".dc.c.b..d..."
   }
 }
 
@@ -243,7 +251,17 @@ class World
     if etype = @active_block.enemy
       switch etype
         when "a"
-          @particles\add EnemySpawner @
+          @particles\add EnemySpawner @, 1
+        when "b"
+          @particles\add EnemySpawner @, 2
+        when "c"
+          @particles\add EnemySpawner @, 3
+        when "d"
+          @particles\add EnemySpawner @, 2
+          @particles\add EnemySpawner @, 2
+        when "e"
+          @particles\add EnemySpawner @, 3
+          @particles\add EnemySpawner @, 3
 
   update: (dt) =>
     @transition\update dt if @transition
