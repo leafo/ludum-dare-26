@@ -118,7 +118,7 @@ class Enemy extends Box
       spray_dir = thing.vel\normalized!
       world.particles\add Sparks spray_dir, world, thing\center!
 
-      @seq = Sequence ->
+      @damage_seq = Sequence ->
         @shake_time = 1
         @rand = math.random!
         tween @, 0.5, shake_time: 0
@@ -128,10 +128,11 @@ class Enemy extends Box
         sfx\play "enemy_hit"
       else
         sfx\play "enemy_die"
+        world.player.score += math.random 101, 127
 
   update: (dt, world) =>
     @vel\adjust unpack @accel * dt
-    @seq\update dt if @seq
+    @damage_seq\update dt if @damage_seq
     @move unpack @vel * dt
 
     @life > 0
@@ -141,8 +142,8 @@ class Enemy extends Box
 
     if t = @shake_time
       g.push!
-      g.translate 5 * t * math.sin(t*10 + @rand),
-        5 * t * math.cos(t*11 + @rand)
+      g.translate 5 * t * math.sin((t*10 + @rand)*5),
+        5 * t * math.cos((t*11 + @rand)*5)
 
       o = (1 - t) * 255
       g.setColor 255, o, o
@@ -239,6 +240,7 @@ class PathEnemy extends Enemy
 
   update: (dt, world) =>
     @world = world
+    @damage_seq\update dt if @damage_seq
     @seq\update(dt) and @life > 0
 
 nil

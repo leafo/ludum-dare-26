@@ -47,6 +47,8 @@ class Player extends Entity
   mover = make_mover "w", "s", "a", "d"
 
   life: 100
+  score: 0
+  display_score: 0
 
   w: 15
   h: 50
@@ -190,6 +192,9 @@ class Player extends Entity
 
     @anim\update dt
     @effects\update dt
+
+    @display_score = approach @display_score, @score,
+      dt * ((@score - @display_score) * 1.5 + 14)
 
     @zv += dt * @za
     @z += @zv * dt

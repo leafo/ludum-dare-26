@@ -77,6 +77,7 @@ class Hud extends Box
     @segment = world.platform\row!
     @progress = world\progress!
     @player_life = world.player\p_life!
+    @player_score = world.player.display_score
 
     @in_danger = world.active_block[@segment]
     @next_block = world.level[world\block_i! + 1] or {}
@@ -228,7 +229,7 @@ class Hud extends Box
     g.push!
     g.translate 100, 16
     g.scale 2
-    box_text "score: 0", 0, 0, false
+    box_text "score: #{f @player_score}", 0, 0, false
     g.pop!
 
 class TitleScreen
@@ -272,7 +273,7 @@ class TitleScreen
 class GameOver
   watch_class @
 
-  new: (player) =>
+  new: (@game) =>
     @viewport = EffectViewport scale: 3
 
   on_key: (key) =>
@@ -290,8 +291,8 @@ class GameOver
     g.push!
     g.translate 0, 10
     p "Game Over", 60, 40
-    p "Level Reached: #{0}", 60, 60
-    p "Score: #{0}", 60, 70
+    p "Level Reached: #{@game.current_level}", 60, 60
+    p "Score: #{f @game.player.score}", 60, 70
 
     p "Press enter to return to title", 60, 100
     p "Thanks for playing! &", 60, 110

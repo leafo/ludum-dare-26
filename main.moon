@@ -284,7 +284,7 @@ class Game
   goto_gameover: =>
     @seq = Sequence ->
       tween @, 1.0, shroud: 255
-      dispatch\push GameOver!
+      dispatch\push GameOver @
 
   on_key: (key, code) =>
     if key == "return"
