@@ -164,7 +164,7 @@ class Hud extends Box
       g.push!
       g.translate g.getWidth!/2, 40
       g.scale 4, 4
-      box_text "stage 1", 0,0, true
+      box_text "stage #{@stage_label}", 0,0, true
       g.pop!
 
     -- danger text

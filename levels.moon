@@ -168,9 +168,15 @@ class World
       @show_continue_message = true
       tween @, 1.0, shroud: 255
       wait_for_key "return"
+
+      lid = @game.current_level + 1
+      @game.current_level += 1
+      @load_level lid
+
       tween @, 1.0, shroud: 0
       @show_continue_message = false
       @player.locked = false
+
 
   block_i: =>
     return -1 unless @started and @num_blocks
@@ -213,10 +219,11 @@ class World
       g.push!
       g.translate @game.viewport.w / 2, @game.viewport.h / 2
       g.scale 2,2
+      tcolor = {0,0,0, @shroud}
       g.setColor 255,255,255, @shroud
-      box_text "Stage Complete", 0, 0
+      box_text "Stage Complete", 0, 0, true, tcolor
       g.setColor 255,255,255, @shroud
-      box_text "Press Enter To Continue", 0, 10
+      box_text "Press Enter To Continue", 0, 10, true, tcolor
       g.pop!
 
   collides: (thing) =>
