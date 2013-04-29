@@ -8,10 +8,10 @@ export ^
 
 Levels = {
   {
-    "...xxxxxxxxxxxxxxxxxxxxxxxxxx"
-    "............................."
-    "...xxxxxxxxxxxxxxxxxxxxxxxxxx"
-    "aa..........................."
+    "."
+    "."
+    "."
+    "."
   }
 
   {
@@ -104,7 +104,7 @@ class World
 
   speed: 77
   block_size: 300
-  started: true
+  started: false
 
   lazy_value @, "tutorial", -> imgfy "img/tutorial.png"
 
@@ -120,11 +120,9 @@ class World
     @box = Box 0, 0, g.getWidth!, g.getHeight!
     @expanded_box = @box\pad -20
 
-    @level = @parse_level level
-
-    @num_blocks = #@level
     @traversed = 0
-    @length = @num_blocks * @block_size
+    @level = {}
+    @active_block = { }
 
     @barriers = {
       Barrier 1
@@ -132,7 +130,25 @@ class World
       Barrier 3
     }
 
-    @active_block = { }
+  start: =>
+    return if @started
+    @started = true
+    lid = @game.current_level + 1
+    @game.current_level += 1
+    @load_level lid
+
+  load_level: (lid) =>
+    level = Levels[lid]
+    unless level
+      level = Levels[#Levels]
+
+    @game.hud\show_stage lid
+
+    @traversed = 0
+    @level = @parse_level level
+
+    @num_blocks = #@level
+    @length = @num_blocks * @block_size
 
   parse_level: (level) =>
     {row1, row2, row3, enemies} = level
@@ -145,14 +161,18 @@ class World
       }
 
   block_i: =>
-    return -1 unless @started
+    return -1 unless @started and @num_blocks
     _min f(@progress! * @num_blocks) + 1, @num_blocks
 
   block_progress: =>
     @traversed % @block_size / @block_size
 
   progress: =>
-    @traversed / @length
+    return 0 unless @length and @length != 0
+
+    p = @traversed / @length
+    p = 1 if p > 1
+    p
 
   draw: =>
     @ground\draw!

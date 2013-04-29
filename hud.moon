@@ -84,6 +84,11 @@ class Hud extends Box
 
     @blinker\update dt
 
+    if @stage_timeout
+      @stage_timeout -= dt
+      if @stage_timeout < 0
+        @stage_timeout = nil
+
     @time += dt
 
   -- this is dumb
@@ -97,6 +102,10 @@ class Hud extends Box
     else
       -- 0.75 -> 1.0
       0.75 + (p - 0.66) / 0.33 * 0.25
+
+  show_stage: (label) =>
+    @stage_label = label
+    @stage_timeout = 3
 
   draw: =>
     pt_size = g.getPointSize!
@@ -149,6 +158,14 @@ class Hud extends Box
     @draw_warning_rect 1, @next_block[1]
     @draw_warning_rect 2, @next_block[2]
     @draw_warning_rect 3, @next_block[3]
+
+    if @stage_timeout and @stage_timeout > 0 and @_blink_on
+      g.setColor unpack white
+      g.push!
+      g.translate g.getWidth!/2, 40
+      g.scale 4, 4
+      box_text "stage 1", 0,0, true
+      g.pop!
 
     -- danger text
     if @in_danger and @_blink_on

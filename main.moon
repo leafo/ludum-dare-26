@@ -262,13 +262,14 @@ class Wheel
 class Game
   show_fps: false
   shroud: 1
-  current_level: 1
+  current_level: 0
 
   new: =>
     @updated = false
     @player = Player 0,0
     @world = World @, @player
     @hud = Hud @world
+
     @viewport = with EffectViewport scale: 1
       import effects from lovekit
       .shake = (amount=20) =>
@@ -288,7 +289,7 @@ class Game
 
   on_key: (key, code) =>
     if key == "return"
-      @world.started = true
+      @world\start!
 
     -- TODO: remove me
     if key == "f2"
