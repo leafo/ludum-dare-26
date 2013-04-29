@@ -247,9 +247,15 @@ class World
 
   update: (dt) =>
     @transition\update dt if @transition
+    progress = @progress!
 
-    @traversed += dt * @speed if @started
-    if @progress! == 1 and not @transition
+    if @started
+      if progress < 1.0
+        @player.score += dt * 6 * math.min(@game.current_level, 5)
+
+      @traversed += dt * @speed
+
+    if progress == 1 and not @transition
       @goto_next_level!
 
     bid = @block_i!
