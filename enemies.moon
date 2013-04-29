@@ -23,6 +23,9 @@ bez3_prime = (x1, y1, x2, y2, x3, y3, t) ->
 
   x,y
 
+reverse = (t) ->
+  return for i=#t,1,-1 do t[i]
+
 class Thing
   speed: 200
 
@@ -72,18 +75,19 @@ class Thing
 
 -- stores enemies in the entity list in the world
 class EnemySpawner extends Sequence
-  new: (@world) =>
+  new: (@world, num_enemies=3) =>
     super ->
-      targets = PathEnemy\gen_targets @world, 2
+      for i=1, num_enemies
+        targets = PathEnemy\gen_targets @world, 2
 
-      ix = @world.box.x - 100
-      iy = rand -200, @world.box.h * 0.4
+        if math.random! < 0.5
+          targets = reverse targets
 
-      -- @world.entities\add Enemy 0, 100, Vec2d(100, 0)
-      @world.entities\add PathEnemy ix, iy, targets
+        {ix, iy} = table.remove targets, 1
 
-      wait 2.0
-      again!
+        -- @world.entities\add Enemy 0, 100, Vec2d(100, 0)
+        @world.entities\add PathEnemy ix, iy, targets
+        wait 2.0
 
   draw: =>
 
@@ -179,13 +183,16 @@ class PathEnemy extends Enemy
 
     min_x = 0
 
-    targets = for i=1,num_targets
-      t = {
+    targets = {
+      { world.box.x - 100, rand(-200, max_height) }
+    }
+
+    for i=1,num_targets
+      table.insert targets, {
         rand min_x, min_x + chunk
         rand 0, max_height
       }
       min_x += chunk
-      t
 
     targets[#targets + 1] = {
       world.box.w + 200, rand(-200, max_height)

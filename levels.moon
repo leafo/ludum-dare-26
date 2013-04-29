@@ -8,10 +8,10 @@ export ^
 
 Levels = {
   {
-    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    "...xxxxxxxxxxxxxxxxxxxxxxxxxx"
     "............................."
-    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    "............................."
+    "...xxxxxxxxxxxxxxxxxxxxxxxxxx"
+    ".a..........................."
   }
 
   {
@@ -119,8 +119,6 @@ class World
     @platform = Platform!
     @ground = Ground!
 
-    @particles\add EnemySpawner @
-
     @box = Box 0, 0, g.getWidth!, g.getHeight!
     @expanded_box = @box\pad -20
 
@@ -145,7 +143,7 @@ class World
         row1\sub(i,i) != "."
         row2\sub(i,i) != "."
         row3\sub(i,i) != "."
-        enemy: if enemies\sub(i,i) != "." then EnemySpawner
+        enemy: enemies\sub(i,i)
       }
 
   block_i: =>
@@ -186,6 +184,11 @@ class World
     @active_block = @level[bid] or {}
     for i=1,3
       @barriers[i].has_collided = false
+
+    if etype = @active_block.enemy
+      switch etype
+        when "a"
+          @particles\add EnemySpawner @
 
   update: (dt) =>
     @traversed += dt * @speed if @started
