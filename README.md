@@ -1,6 +1,7 @@
-
 # Moondar
 ### A game made in 48 hours for Ludum Dare 26
+
+![Moondar](http://leafo.net/dump/moondar2.gif)
 
 Life seemed so normal driving around your moon buggy on planet Moondar, until
 one day aliens invaded. You narrowly escaped their mothership but
@@ -18,8 +19,8 @@ make it across Moondar? (Hint: you aren't, the game lasts forever.)
 
 ### How to play
 
-You buggy can be in one of three rows at any given time. The on screen
-indicator on the top left will tell which one you are in. As the buggy moves
+Your buggy can be in one of three rows at any given time. The on-screen
+indicator on the top right will tell which one you are in. As the buggy moves
 obstacles will take up an entire row for a brief period of time. Move the buggy
 out of the way to avoid collision. Hitting an obstacle will take 1/3 of your
 health.
