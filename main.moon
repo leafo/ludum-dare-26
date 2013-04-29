@@ -288,6 +288,9 @@ class Game
       dispatch\push GameOver @
 
   on_key: (key, code) =>
+    if key == "f3"
+      @world\goto_next_level!
+
     if key == "return"
       @world\start!
 

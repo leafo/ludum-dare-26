@@ -106,6 +106,8 @@ class World
   block_size: 300
   started: false
 
+  shroud: 0
+
   lazy_value @, "tutorial", -> imgfy "img/tutorial.png"
 
   new: (@game, @player, level=Levels[1]) =>
@@ -160,6 +162,16 @@ class World
         enemy: enemies\sub(i,i)
       }
 
+  goto_next_level: =>
+    @transition = Sequence ->
+      @player.locked = true
+      @show_continue_message = true
+      tween @, 1.0, shroud: 255
+      wait_for_key "return"
+      tween @, 1.0, shroud: 0
+      @show_continue_message = false
+      @player.locked = false
+
   block_i: =>
     return -1 unless @started and @num_blocks
     _min f(@progress! * @num_blocks) + 1, @num_blocks
@@ -182,7 +194,6 @@ class World
       @barriers[i]\draw_shadow! if @active_block[i]
 
     for i = 1,3
-
       if player_row == i
         @platform\draw -> @player\draw!
         @particles\draw!
@@ -194,6 +205,19 @@ class World
 
     unless @started
       @tutorial\draw 0,0, 0, 2,2
+
+    if @shroud > 0
+      @game.viewport\draw {0,0,0, @shroud}
+
+    if @show_continue_message
+      g.push!
+      g.translate @game.viewport.w / 2, @game.viewport.h / 2
+      g.scale 2,2
+      g.setColor 255,255,255, @shroud
+      box_text "Stage Complete", 0, 0
+      g.setColor 255,255,255, @shroud
+      box_text "Press Enter To Continue", 0, 10
+      g.pop!
 
   collides: (thing) =>
     @platform\collides thing
@@ -209,7 +233,11 @@ class World
           @particles\add EnemySpawner @
 
   update: (dt) =>
+    @transition\update dt if @transition
+
     @traversed += dt * @speed if @started
+    if @progress! == 1 and not @transition
+      @goto_next_level!
 
     bid = @block_i!
     if bid != @_current_block
