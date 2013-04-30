@@ -183,7 +183,7 @@ class World
       tween @, 1.0, shroud: 0
       @show_continue_message = false
       @player.locked = false
-
+      @transition = false
 
   block_i: =>
     return -1 unless @started and @num_blocks
